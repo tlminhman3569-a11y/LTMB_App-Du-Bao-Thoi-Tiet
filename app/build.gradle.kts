@@ -43,10 +43,10 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
 
     // 1. Thư viện Retrofit & GSON (Dùng để gọi API thời tiết)
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
     // 2. Thư viện Glide (Dùng để tải icon thời tiết từ link web)
-    implementation("com.github.bumptech.glide:glide:5.0.7")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }
