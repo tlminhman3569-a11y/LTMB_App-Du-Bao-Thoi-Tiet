@@ -49,4 +49,7 @@ dependencies {
     // 2. Thư viện Glide (Dùng để tải icon thời tiết từ link web)
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    // 3. Thư viện dịch vụ định vị của Google Play Services
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 }
