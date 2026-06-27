@@ -2,11 +2,13 @@ package com.example.weatherapp.ui.home;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -36,6 +38,7 @@ public class HomeFragment extends Fragment {
     // Các thành phần giao diện UI
     private TextView tvCityName, tvTemperature, tvWeatherDescription, tvHumidity, tvWindSpeed;
     private ImageView imgWeatherIcon;
+    private View layoutBackground;
 
     // Bộ phóng kích hoạt hộp thoại xin quyền của Android
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
@@ -64,6 +67,7 @@ public class HomeFragment extends Fragment {
         tvHumidity = view.findViewById(R.id.tvHumidity);
         tvWindSpeed = view.findViewById(R.id.tvWindSpeed);
         imgWeatherIcon = view.findViewById(R.id.imgWeatherIcon);
+        layoutBackground = view.findViewById(R.id.layoutBackground);
 
         // 2. Khởi tạo công cụ định vị của Google
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
@@ -178,6 +182,36 @@ public class HomeFragment extends Fragment {
                     .load(iconUrl)
                     .placeholder(android.R.drawable.ic_menu_report_image) // Ảnh hiển thị tạm lúc đang tải
                     .into(imgWeatherIcon);
+
+            // MỚI THÊM: Gọi hàm đổi màu nền
+            updateDynamicBackground(iconCode);
+        }
+    }
+
+    // Hàm xử lý logic đổi ảnh nền động theo thời tiết
+    private void updateDynamicBackground(String iconCode) {
+        if (iconCode == null || layoutBackground == null) return;
+
+        if (iconCode.endsWith("n")) {
+            // Ảnh ban đêm
+            layoutBackground.setBackgroundResource(R.drawable.bg_night);
+        } else {
+            if (iconCode.startsWith("01")) {
+                // Ảnh trời nắng trong xanh
+                layoutBackground.setBackgroundResource(R.drawable.bg_sunny);
+            } else if (iconCode.startsWith("02") || iconCode.startsWith("03")) {
+                // Ảnh trời mây nhẹ, mây trắng bồng bềnh
+                layoutBackground.setBackgroundResource(R.drawable.bg_cloudy);
+            } else if (iconCode.startsWith("04")) {
+                //  Ảnh bầu trời mây đen u ám, xám xịt
+                layoutBackground.setBackgroundResource(R.drawable.bg_overcast);
+            } else if (iconCode.startsWith("09") || iconCode.startsWith("10") || iconCode.startsWith("11")) {
+                // Ảnh trời mưa bão
+                layoutBackground.setBackgroundResource(R.drawable.bg_rainy);
+            } else {
+                // Mặc định
+                layoutBackground.setBackgroundResource(R.drawable.bg_sunny);
+            }
         }
     }
 

@@ -1,101 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutBackground"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tvCityName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="24dp"
-        android:text="Đang định vị..."
-        android:textColor="@color/white"
-        android:textSize="28sp"
-        android:textStyle="bold" />
-
-    <ImageView
-        android:id="@+id/imgWeatherIcon"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_below="@id/tvCityName"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:src="@android:drawable/ic_menu_report_image" />
-
-    <TextView
-        android:id="@+id/tvTemperature"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/imgWeatherIcon"
-        android:layout_centerHorizontal="true"
-        android:text="--°C"
-        android:textColor="@color/white"
-        android:textSize="64sp"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/tvWeatherDescription"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvTemperature"
-        android:layout_centerHorizontal="true"
-        android:text="--"
-        android:textColor="@color/white"
-        android:textSize="18sp" />
-
-    <LinearLayout
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="16dp"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:background="#33000000" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tvCityName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="24dp"
+            android:text="Đang định vị..."
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/imgWeatherIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_below="@id/tvCityName"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="16dp"
+            android:src="@android:drawable/ic_menu_report_image" />
+
+        <TextView
+            android:id="@+id/tvTemperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/imgWeatherIcon"
+            android:layout_centerHorizontal="true"
+            android:text="--°C"
+            android:textColor="@color/white"
+            android:textSize="64sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvWeatherDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tvTemperature"
+            android:layout_centerHorizontal="true"
+            android:text="--"
+            android:textColor="@color/white"
+            android:textSize="18sp" />
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <TextView
-                android:layout_width="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Độ ẩm"
-                android:textColor="@color/white"
-                android:textSize="14sp"/>
-            <TextView
-                android:id="@+id/tvHumidity"
-                android:layout_width="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Độ ẩm"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"/>
+                <TextView
+                    android:id="@+id/tvHumidity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--%"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="--%"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tốc độ gió"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"/>
+                <TextView
+                    android:id="@+id/tvWindSpeed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-- km/h"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+            </LinearLayout>
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tốc độ gió"
-                android:textColor="@color/white"
-                android:textSize="14sp"/>
-            <TextView
-                android:id="@+id/tvWindSpeed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="-- km/h"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
-        </LinearLayout>
-    </LinearLayout>
-
-</RelativeLayout>
+    </RelativeLayout>
+</FrameLayout>
