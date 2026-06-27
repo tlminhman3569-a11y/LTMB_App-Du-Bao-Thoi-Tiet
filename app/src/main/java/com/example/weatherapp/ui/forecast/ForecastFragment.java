@@ -23,11 +23,11 @@ import retrofit2.Response;
 
 public class ForecastFragment extends Fragment {
 
-    // Mock tọa độ cứng TP.HCM (không đợi GPS của TV1)
+    // Khoi tao toa do mac dinh
     private static final double MOCK_LAT = 10.823;
     private static final double MOCK_LON = 106.629;
 
-    // API Key (dùng chung với project)
+    // API Key
     private final String API_KEY = "ec300b0837672f3a17c36026f68a0f00";
 
     private RecyclerView rvHourlyForecast;
@@ -40,19 +40,18 @@ public class ForecastFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_forecast, container, false);
 
-        // 1. Khởi tạo RecyclerView Hàng Giờ (Cuộn ngang)
+        // Khoi tao RecyclerView du bao hang gio
         rvHourlyForecast = view.findViewById(R.id.rvHourlyForecast);
         rvHourlyForecast.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         hourlyAdapter = new HourlyForecastAdapter();
         rvHourlyForecast.setAdapter(hourlyAdapter);
 
-        // 2. Khởi tạo RecyclerView Hàng Ngày (Cuộn dọc)
+        // Khoi tao RecyclerView du bao hang ngay
         rvDailyForecast = view.findViewById(R.id.rvDailyForecast);
         rvDailyForecast.setLayoutManager(new LinearLayoutManager(getContext()));
         dailyAdapter = new DailyForecastAdapter();
         rvDailyForecast.setAdapter(dailyAdapter);
 
-        // Gọi API lấy dữ liệu forecast
         fetchForecast();
 
         return view;
@@ -70,14 +69,15 @@ public class ForecastFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     List<ForecastItem> fullList = response.body().getList();
                     if (fullList != null && !fullList.isEmpty()) {
-                        // Tách dữ liệu hàng giờ (8 item đầu tương đương 24 tiếng)
+                        
+                        // Lay du lieu du bao hang gio
                         List<ForecastItem> hourlyList = new ArrayList<>();
                         for (int i = 0; i < Math.min(8, fullList.size()); i++) {
                             hourlyList.add(fullList.get(i));
                         }
                         hourlyAdapter.setData(hourlyList);
 
-                        // Tách dữ liệu hàng ngày (Lọc lấy các item lúc 12:00:00 trưa hàng ngày)
+                        // Lay du lieu du bao hang ngay
                         List<ForecastItem> dailyList = new ArrayList<>();
                         for (ForecastItem item : fullList) {
                             String dtTxt = item.getDtTxt();
@@ -99,6 +99,6 @@ public class ForecastFragment extends Fragment {
         });
     }
 
-    // Giả lập cho UC5 (Settings)
+    // Phuong thuc lay don vi nhiet do hien tai
     private boolean isCelsius() { return true; }
 }
