@@ -15,19 +15,16 @@
         android:focusable="true"
         android:background="?android:attr/selectableItemBackground"
         android:layout_marginBottom="16dp">
-
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_revert"
             android:contentDescription="Quay lại" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=" Quay lại"
-            android:textSize="16sp"
-            android:textColor="?android:attr/textColorPrimary"/>
+            android:textSize="16sp"/>
     </LinearLayout>
 
     <TextView
@@ -38,51 +35,79 @@
         android:textStyle="bold"
         android:layout_marginBottom="24dp"/>
 
-    <RelativeLayout
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đơn vị nhiệt độ"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/rgTemperature"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp">
-        <TextView
-            android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
+
+        <RadioButton
+            android:id="@+id/rbCelsius"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Sử dụng độ C (°C)"
-            android:textSize="18sp"
-            android:layout_centerVertical="true"/>
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchCelsius"
-            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:text="Độ C (°C)"
+            android:textSize="16sp"/>
+
+        <RadioButton
+            android:id="@+id/rbFahrenheit"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:checked="true"/>
-    </RelativeLayout>
+            android:layout_weight="1"
+            android:text="Độ F (°F)"
+            android:textSize="16sp"/>
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Đơn vị tốc độ gió"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/rgWindSpeed"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="24dp">
+
+        <RadioButton
+            android:id="@+id/rbKmh"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Km/h"
+            android:textSize="16sp"/>
+
+        <RadioButton
+            android:id="@+id/rbMph"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Mph (Dặm/giờ)"
+            android:textSize="16sp"/>
+    </RadioGroup>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sử dụng km/h"
-            android:textSize="18sp"
-            android:layout_centerVertical="true"/>
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/switchKmh"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:checked="true"/>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp">
+        android:layout_height="wrap_content">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Chế độ Tối (Dark Mode)"
-            android:textSize="18sp"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:layout_centerVertical="true"/>
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/switchDarkMode"
