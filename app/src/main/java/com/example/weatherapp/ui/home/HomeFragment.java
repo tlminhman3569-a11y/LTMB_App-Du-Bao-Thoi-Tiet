@@ -24,11 +24,20 @@ import com.example.weatherapp.api.RetrofitClient;
 import com.example.weatherapp.models.common.WeatherResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.gson.Gson;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
+    private androidx.swiperefreshlayout.widget.SwipeRefreshLayout swipeRefreshLayout;
+    private android.content.SharedPreferences sharedPreferences;
+
+    private static final String PREFS_NAME = "WeatherCachePrefs";
+    private static final String KEY_WEATHER_JSON = "cached_weather_json";
+    private static final String KEY_CACHE_TIMESTAMP = "cache_timestamp";
+    private static final long CACHE_DURATION = 15 * 60 * 1000; // 15 phút tính bằng mili-giây
 
     // API Open Weather (https://home.openweathermap.org/api_keys)
     private final String API_KEY = "ec300b0837672f3a17c36026f68a0f00";
@@ -52,6 +61,7 @@ public class HomeFragment extends Fragment {
                 } else {
                     // Người dùng từ chối cấp quyền
                     Toast.makeText(getContext(), "Ứng dụng cần quyền vị trí để chạy!", Toast.LENGTH_LONG).show();
+                    if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
                 }
             });
 
@@ -69,13 +79,40 @@ public class HomeFragment extends Fragment {
         imgWeatherIcon = view.findViewById(R.id.imgWeatherIcon);
         layoutBackground = view.findViewById(R.id.layoutBackground);
 
+        // Ánh xạ swipeRefreshLayout và sharedPreferences
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+        sharedPreferences = requireActivity().getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE);
+
         // 2. Khởi tạo công cụ định vị của Google
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        // 3. Kiểm tra quyền và kích hoạt chuỗi xử lý mạng
-        checkLocationPermissions();
+        // 3. Bắt sự kiện vuốt để làm mới
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            // Khi vuốt, bỏ qua Cache và ép gọi API mới
+            checkLocationPermissions();
+        });
+
+        // Không gọi API luôn, kiểm tra cache trước
+        checkWeatherCache();
 
         return view;
+    }
+
+    // Hàm kiểm tra cache
+    private void checkWeatherCache() {
+        String cachedJson = sharedPreferences.getString(KEY_WEATHER_JSON, null);
+        long cacheTime = sharedPreferences.getLong(KEY_CACHE_TIMESTAMP, 0);
+        long currentTime = System.currentTimeMillis();
+
+        if (cachedJson != null && (currentTime - cacheTime < CACHE_DURATION)) {
+            // Nếu cache còn hạn (chưa quá 15p), dùng Gson biến chuỗi về lại Object và hiển thị ngay
+            Gson gson = new Gson();
+            WeatherResponse cachedData = gson.fromJson(cachedJson, WeatherResponse.class);
+            updateUI(cachedData);
+        } else {
+            // Hết hạn hoặc chưa có dữ liệu -> Xin quyền & gọi mạng
+            checkLocationPermissions();
+        }
     }
 
     // Hàm kiểm tra xem ứng dụng đã được cấp quyền vị trí chưa
@@ -114,10 +151,12 @@ public class HomeFragment extends Fragment {
 
                 } else {
                     Toast.makeText(getContext(), "Hãy bật GPS trên thiết bị!", Toast.LENGTH_SHORT).show();
+                    if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false); // Tắt loading nếu lỗi
                 }
             });
         } catch (SecurityException e) {
             e.printStackTrace();
+            if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
         }
     }
 
@@ -133,9 +172,22 @@ public class HomeFragment extends Fragment {
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                // TẮT HIỆU ỨNG LOADING CỦA SWIPE REFRESH
+                if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+
                 if (response.isSuccessful() && response.body() != null) {
-                    // Đã lấy được dữ liệu thành công từ Internet về máy!
                     WeatherResponse weatherData = response.body();
+
+                    // LƯU DỮ LIỆU MỚI VÀO CACHE TRƯỚC KHI HIỂN THỊ
+                    Gson gson = new Gson();
+                    String jsonToCache = gson.toJson(weatherData);
+                    sharedPreferences.edit()
+                            .putString(KEY_WEATHER_JSON, jsonToCache)
+                            .putLong(KEY_CACHE_TIMESTAMP, System.currentTimeMillis())
+                            .apply();
+
                     updateUI(weatherData);
                 } else {
                     Toast.makeText(getContext(), "Lỗi dữ liệu từ máy chủ API!", Toast.LENGTH_SHORT).show();
@@ -144,6 +196,11 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                // Tắt vòng xoay nếu rớt mạng
+                if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+
                 // Lỗi mất kết nối mạng, rớt mạng hoặc sai link gốc
                 Toast.makeText(getContext(), "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }

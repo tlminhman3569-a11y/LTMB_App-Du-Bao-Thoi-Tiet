@@ -52,4 +52,6 @@ dependencies {
 
     // 3. Thư viện dịch vụ định vị của Google Play Services
     implementation("com.google.android.gms:play-services-location:21.2.0")
+
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }
