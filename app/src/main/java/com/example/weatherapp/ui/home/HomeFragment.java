@@ -108,6 +108,11 @@ public class HomeFragment extends Fragment {
             // Nếu cache còn hạn (chưa quá 15p), dùng Gson biến chuỗi về lại Object và hiển thị ngay
             Gson gson = new Gson();
             WeatherResponse cachedData = gson.fromJson(cachedJson, WeatherResponse.class);
+
+            //  Lấy tên thành phố từ Cache ra gán
+            String savedCityName = sharedPreferences.getString("cached_city_name", "Không rõ địa điểm");
+            tvCityName.setText(savedCityName);
+
             updateUI(cachedData);
         } else {
             // Hết hạn hoặc chưa có dữ liệu -> Xin quyền & gọi mạng
@@ -118,7 +123,7 @@ public class HomeFragment extends Fragment {
     // Hàm kiểm tra xem ứng dụng đã được cấp quyền vị trí chưa
     private void checkLocationPermissions() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Đã có quyền, tiến hành lấy vị trí luôn
+            // Đã có quyền, tiến hành lấy vị trí
             getDeviceLocation();
         } else {
             // Chưa có quyền, hiển thị hộp thoại xin quyền
@@ -144,6 +149,8 @@ public class HomeFragment extends Fragment {
                         if (addresses != null && !addresses.isEmpty()) {
                             String cityName = addresses.get(0).getAdminArea(); // Lấy tên Tỉnh/Thành phố
                             tvCityName.setText(cityName); // Gắn tên lên giao diện
+                            // Lưu tên thành phố vào Cache
+                            sharedPreferences.edit().putString("cached_city_name", cityName).apply();
                         }
                     } catch (java.io.IOException e) {
                         e.printStackTrace();
