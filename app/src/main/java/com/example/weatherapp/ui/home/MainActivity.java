@@ -2,16 +2,10 @@ package com.example.weatherapp.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.view.WindowInsetsControllerCompat;
 import com.example.weatherapp.R;
-import com.example.weatherapp.ui.forecast.ForecastFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,17 +14,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // An Status Bar de hien thi toan man hinh
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
         setContentView(R.layout.activity_main);
 
         // Việc của TV1 Nạp mảnh ghép HomeFragment vào khung trên
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container_current_weather, new HomeFragment())
-                    .replace(R.id.container_forecast, new ForecastFragment())
                     .commit();
         }
 
