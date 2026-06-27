@@ -25,17 +25,12 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="@android:color/transparent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Weather App"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
-            android:layout_centerVertical="true"/>
+        android:padding="@dimen/padding_default" android:background="@color/transparent"> <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Weather App"
+        android:textSize="@dimen/text_size_title" android:textStyle="bold"
+        android:textColor="@color/white" android:layout_centerVertical="true"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -51,24 +46,19 @@
                 android:layout_marginEnd="18dp"
                 android:src="@android:drawable/ic_menu_search"
                 android:contentDescription="Tìm kiếm"
-                app:tint="@android:color/white" />
-
-            <ImageView
-                android:id="@+id/btnFavorite"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:layout_marginEnd="18dp"
-                android:src="@android:drawable/ic_menu_myplaces"
-                android:contentDescription="Yêu thích"
-                app:tint="@android:color/white" />
-
-            <ImageView
-                android:id="@+id/btnSettings"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@android:drawable/ic_menu_preferences"
-                android:contentDescription="Cài đặt"
-                app:tint="@android:color/white" />
-        </LinearLayout>
+                app:tint="@color/white" /> <ImageView
+            android:id="@+id/btnFavorite"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="18dp"
+            android:src="@android:drawable/ic_menu_myplaces"
+            android:contentDescription="Yêu thích"
+            app:tint="@color/white" /> <ImageView
+            android:id="@+id/btnSettings"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@android:drawable/ic_menu_preferences"
+            android:contentDescription="Cài đặt"
+            app:tint="@color/white" /> </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>
