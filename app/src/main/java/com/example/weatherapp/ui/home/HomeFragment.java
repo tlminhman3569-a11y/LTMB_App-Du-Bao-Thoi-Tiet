@@ -142,19 +142,24 @@ public class HomeFragment extends Fragment {
                     // 1. Lấy tọa độ thành công -> Bắn tọa độ sang hàm gọi API mạng
                     fetchCurrentWeather(location.getLatitude(), location.getLongitude());
 
-                    // 2. Dùng Geocoder để lấy tên địa phương chuẩn xác NGAY TẠI ĐÂY
-                    android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), java.util.Locale.getDefault());
-                    try {
-                        java.util.List<android.location.Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                        if (addresses != null && !addresses.isEmpty()) {
-                            String cityName = addresses.get(0).getAdminArea(); // Lấy tên Tỉnh/Thành phố
-                            tvCityName.setText(cityName); // Gắn tên lên giao diện
-                            // Lưu tên thành phố vào Cache
-                            sharedPreferences.edit().putString("cached_city_name", cityName).apply();
+                    // 2. Dung Geocoder de lay ten dia phuong (Chay trong background thread de tranh ANR)
+                    new Thread(() -> {
+                        android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), java.util.Locale.getDefault());
+                        try {
+                            java.util.List<android.location.Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            if (addresses != null && !addresses.isEmpty()) {
+                                String cityName = addresses.get(0).getAdminArea();
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> {
+                                        tvCityName.setText(cityName);
+                                    });
+                                }
+                                sharedPreferences.edit().putString("cached_city_name", cityName).apply();
+                            }
+                        } catch (java.io.IOException e) {
+                            e.printStackTrace();
                         }
-                    } catch (java.io.IOException e) {
-                        e.printStackTrace();
-                    }
+                    }).start();
 
                 } else {
                     Toast.makeText(getContext(), "Hãy bật GPS trên thiết bị!", Toast.LENGTH_SHORT).show();
@@ -221,13 +226,32 @@ public class HomeFragment extends Fragment {
 
         // Đổ nhiệt độ (Làm tròn thành số nguyên và thêm đơn vị °C dựa theo cài đặt)
         int tempInt = (int) Math.round(data.getMain().getTemp());
-        tvTemperature.setText(tempInt + (isCelsius() ? "°C" : "°F"));
+        //tvTemperature.setText(tempInt + (isCelsius() ? "°C" : "°F"));
+
+        if (isCelsius()) {
+            // Nếu là độ C -> Hiển thị bình thường
+            tvTemperature.setText(tempInt + "°C");
+        } else {
+            // Nếu là độ F -> Đổi công thức: F = C * 1.8 + 32
+            int tempInFahrenheit = (int) Math.round(tempInt * 1.8 + 32);
+            tvTemperature.setText(tempInFahrenheit + "°F");
+        }
 
         // Đổ độ ẩm
         tvHumidity.setText(data.getMain().getHumidity() + "%");
 
         // Đổ tốc độ gió
-        tvWindSpeed.setText(data.getWind().getSpeed() + (isKmH() ? " km/h" : " mph"));
+        //tvWindSpeed.setText(data.getWind().getSpeed() + (isKmH() ? " km/h" : " mph"));
+
+        double windSpeed = data.getWind().getSpeed();
+        if (isKmH()) {
+            // Nếu chọn km/h -> Hiển thị đơn vị km/h
+            tvWindSpeed.setText(String.format("%.1f Km/h", windSpeed));
+        } else {
+            // Nếu chọn mph -> Quy đổi đơn vị: mph = km/h / 1.60934
+            double speedInMph = windSpeed / 1.60934;
+            tvWindSpeed.setText(String.format("%.1f Mph", speedInMph));
+        }
 
         // Kiểm tra và đổ phần mô tả thời tiết + tải icon bằng Glide
         if (data.getWeather() != null && !data.getWeather().isEmpty()) {
@@ -251,6 +275,7 @@ public class HomeFragment extends Fragment {
             updateDynamicBackground(iconCode);
         }
     }
+
 
     // Hàm xử lý logic đổi ảnh nền động theo thời tiết
     private void updateDynamicBackground(String iconCode) {
@@ -279,7 +304,21 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // Phần giả lập trước cho UC 5 (Setting)
-    private boolean isCelsius() { return true; }
-    private boolean isKmH() { return true; }
+    //UC-05: Chuyển đổi đơn vị đo độ ẩm độ C:
+    private boolean isCelsius() {
+        if (getActivity() == null) return true;
+        android.content.SharedPreferences prefs = getActivity().getSharedPreferences("WeatherSettingsPrefs", android.content.Context.MODE_PRIVATE);
+        return prefs.getBoolean("is_celsius", true);
+    }
+
+    private boolean isKmH() {
+        if (getActivity() == null) return true;
+        android.content.SharedPreferences prefs = getActivity().getSharedPreferences("WeatherSettingsPrefs", android.content.Context.MODE_PRIVATE);
+        return prefs.getBoolean("is_kmh", true);
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        checkWeatherCache();
+    }
 }
