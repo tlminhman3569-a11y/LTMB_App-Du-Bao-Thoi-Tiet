@@ -142,19 +142,24 @@ public class HomeFragment extends Fragment {
                     // 1. Lấy tọa độ thành công -> Bắn tọa độ sang hàm gọi API mạng
                     fetchCurrentWeather(location.getLatitude(), location.getLongitude());
 
-                    // 2. Dùng Geocoder để lấy tên địa phương chuẩn xác NGAY TẠI ĐÂY
-                    android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), java.util.Locale.getDefault());
-                    try {
-                        java.util.List<android.location.Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                        if (addresses != null && !addresses.isEmpty()) {
-                            String cityName = addresses.get(0).getAdminArea(); // Lấy tên Tỉnh/Thành phố
-                            tvCityName.setText(cityName); // Gắn tên lên giao diện
-                            // Lưu tên thành phố vào Cache
-                            sharedPreferences.edit().putString("cached_city_name", cityName).apply();
+                    // 2. Dung Geocoder de lay ten dia phuong (Chay trong background thread de tranh ANR)
+                    new Thread(() -> {
+                        android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), java.util.Locale.getDefault());
+                        try {
+                            java.util.List<android.location.Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            if (addresses != null && !addresses.isEmpty()) {
+                                String cityName = addresses.get(0).getAdminArea();
+                                if (getActivity() != null) {
+                                    getActivity().runOnUiThread(() -> {
+                                        tvCityName.setText(cityName);
+                                    });
+                                }
+                                sharedPreferences.edit().putString("cached_city_name", cityName).apply();
+                            }
+                        } catch (java.io.IOException e) {
+                            e.printStackTrace();
                         }
-                    } catch (java.io.IOException e) {
-                        e.printStackTrace();
-                    }
+                    }).start();
 
                 } else {
                     Toast.makeText(getContext(), "Hãy bật GPS trên thiết bị!", Toast.LENGTH_SHORT).show();
