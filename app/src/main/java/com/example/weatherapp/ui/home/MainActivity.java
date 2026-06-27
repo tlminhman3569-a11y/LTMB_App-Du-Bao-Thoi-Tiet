@@ -6,6 +6,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.weatherapp.R;
+import com.example.weatherapp.ui.forecast.ForecastFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -16,10 +17,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Việc của TV1 Nạp mảnh ghép HomeFragment vào khung trên
+        // Nap HomeFragment vao khung tren
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container_current_weather, new HomeFragment())
+                    .replace(R.id.container_forecast, new ForecastFragment())
                     .commit();
         }
 
