@@ -3,7 +3,7 @@ package com.example.weatherapp.api;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-// Theo quy tac nhom: "Khong dung chung 1 file cau hinh ket noi mang"
+// Cấu hình kết nối Retrofit client riêng cho luồng dữ liệu dự báo
 public class ForecastRetrofitClient {
     private static final String BASE_URL = "https://api.openweathermap.org/data/2.5/";
     private static Retrofit retrofit = null;

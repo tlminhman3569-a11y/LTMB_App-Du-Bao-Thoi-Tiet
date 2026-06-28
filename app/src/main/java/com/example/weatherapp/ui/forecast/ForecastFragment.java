@@ -23,7 +23,7 @@ import retrofit2.Response;
 
 public class ForecastFragment extends Fragment {
 
-    // Toa do cung TP.HCM (Giai phap doc lap - Mocking UC1)
+    // Tọa độ mặc định cho TP.HCM trong trường hợp chạy thử nghiệm độc lập hoặc lỗi GPS
     private static final double MOCK_LAT = 10.823;
     private static final double MOCK_LON = 106.629;
 
@@ -60,7 +60,6 @@ public class ForecastFragment extends Fragment {
     private void fetchForecast() {
         ForecastApiService apiService = ForecastRetrofitClient.getClient().create(ForecastApiService.class);
 
-        // Su dung toa do cung TP.HCM (Mocking UC1 - khong phu thuoc GPS cua TV1)
         String units = isCelsius() ? "metric" : "imperial";
         Call<ForecastResponse> call = apiService.getForecast(MOCK_LAT, MOCK_LON, API_KEY, units, "vi");
 
@@ -100,6 +99,7 @@ public class ForecastFragment extends Fragment {
         });
     }
 
-    // Phuong thuc lay don vi nhiet do hien tai
-    private boolean isCelsius() { return true; }
+    private boolean isCelsius() {
+        return true;
+    }
 }

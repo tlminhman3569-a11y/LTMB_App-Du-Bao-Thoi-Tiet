@@ -139,7 +139,7 @@ public class HomeFragment extends Fragment {
         try {
             fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
                 if (location != null) {
-                    // 1. Luu toa do de ForecastFragment su dung chung (Code cua TV1, khong xoa)
+                    // Lưu lại tọa độ cuối cùng để các thành phần giao diện khác có thể đồng bộ sử dụng
                     sharedPreferences.edit()
                             .putFloat("last_lat", (float) location.getLatitude())
                             .putFloat("last_lon", (float) location.getLongitude())

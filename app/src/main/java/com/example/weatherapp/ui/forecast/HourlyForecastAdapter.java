@@ -33,7 +33,7 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
     @Override
     public void onBindViewHolder(@NonNull HourlyViewHolder holder, int position) {
         ForecastItem item = hourlyList.get(position);
-        // Nen kinh mo trang (Glassmorphism) - lay mau tu Design System
+        // Thiết lập màu nền kính mờ cho thẻ
         holder.cardHourlyView.setCardBackgroundColor(
                 androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.colorGlassCard));
 
@@ -68,7 +68,7 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
             holder.tvHourlyPop.setText(popPercent + "%");
             holder.tvHourlyPop.setVisibility(View.VISIBLE);
         } else {
-            // Dung INVISIBLE thay vi GONE de giu nguyen khoang trong, giup cac the co chieu cao bang nhau
+            // Sử dụng INVISIBLE để giữ nguyên diện tích của thẻ, tránh bị lệch chiều cao
             holder.tvHourlyPop.setVisibility(View.INVISIBLE);
         }
     }
