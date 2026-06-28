@@ -51,7 +51,7 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
             holder.tvHourlyTemp.setText(temp + unit);
         }
 
-        // Load icon bang Glide (su dung bo icon mau sac sinh dong)
+        // Load icon bằng Glide
         if (item.getWeather() != null && !item.getWeather().isEmpty()) {
             String iconCode = item.getWeather().get(0).getIcon();
             String iconUrl = "https://openweathermap.org/img/wn/" + iconCode + "@4x.png";
@@ -59,6 +59,21 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
                     .load(iconUrl)
                     .placeholder(android.R.drawable.ic_menu_report_image)
                     .into(holder.imgHourlyIcon);
+
+            // Thiết lập mô tả chi tiết thời tiết
+            String desc = item.getWeather().get(0).getDescription();
+            if (desc != null && !desc.isEmpty()) {
+                desc = desc.substring(0, 1).toUpperCase() + desc.substring(1);
+                final String finalDesc = desc;
+
+                // Tooltip hiển thị mặc định khi nhấn giữ (hệ thống Android tự quản lý)
+                androidx.appcompat.widget.TooltipCompat.setTooltipText(holder.itemView, finalDesc);
+
+                // Hiển thị Toast thông báo nhanh khi click thường vào thẻ
+                holder.itemView.setOnClickListener(v -> {
+                    android.widget.Toast.makeText(v.getContext(), finalDesc, android.widget.Toast.LENGTH_SHORT).show();
+                });
+            }
         }
 
         // Hien thi kha nang co mua (Probability of Precipitation)
