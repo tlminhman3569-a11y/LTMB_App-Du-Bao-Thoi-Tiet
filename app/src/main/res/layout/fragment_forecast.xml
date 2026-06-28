@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/nestedScrollViewForecast"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/transparent"
+    android:background="@color/colorOverlayDark"
     android:fillViewport="true">
 
     <LinearLayout
@@ -17,12 +18,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Dự báo 24 giờ tới"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="@dimen/text_size_subtitle"
+            android:textColor="@color/white"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:paddingStart="@dimen/padding_default"
             android:paddingEnd="@dimen/padding_default"
-            android:paddingBottom="@dimen/padding_small" />
+            android:paddingBottom="@dimen/padding_small"
+            android:shadowColor="@color/colorTextShadow"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
 
         <!-- RECYCLERVIEW HÀNG GIỜ (CUỘN NGANG) -->
         <androidx.recyclerview.widget.RecyclerView
@@ -39,12 +44,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Dự báo 5 ngày tới"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="@dimen/text_size_subtitle"
+            android:textColor="@color/white"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:paddingStart="@dimen/padding_default"
             android:paddingEnd="@dimen/padding_default"
-            android:paddingBottom="@dimen/padding_small" />
+            android:paddingBottom="@dimen/padding_small"
+            android:shadowColor="@color/colorTextShadow"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
 
         <!-- RECYCLERVIEW HÀNG NGÀY (CUỘN DỌC) -->
         <androidx.recyclerview.widget.RecyclerView

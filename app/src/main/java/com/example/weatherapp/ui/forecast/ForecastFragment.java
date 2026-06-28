@@ -10,9 +10,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 import com.example.weatherapp.R;
 import com.example.weatherapp.api.ForecastApiService;
-import com.example.weatherapp.api.RetrofitClient;
+import com.example.weatherapp.api.ForecastRetrofitClient;
 import com.example.weatherapp.models.forecast.ForecastItem;
 import com.example.weatherapp.models.forecast.ForecastResponse;
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ import retrofit2.Response;
 
 public class ForecastFragment extends Fragment {
 
-    // Khoi tao toa do mac dinh
+    // Tọa độ mặc định cho TP.HCM trong trường hợp chạy thử nghiệm độc lập hoặc lỗi GPS
     private static final double MOCK_LAT = 10.823;
     private static final double MOCK_LON = 106.629;
 
@@ -43,8 +45,39 @@ public class ForecastFragment extends Fragment {
         // Khoi tao RecyclerView du bao hang gio
         rvHourlyForecast = view.findViewById(R.id.rvHourlyForecast);
         rvHourlyForecast.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvHourlyForecast.setEdgeEffectFactory(new SpringyEdgeEffectFactory());
         hourlyAdapter = new HourlyForecastAdapter();
         rvHourlyForecast.setAdapter(hourlyAdapter);
+
+        // Hiệu ứng nảy đàn hồi cho các thẻ hàng giờ khi cuộn ngang
+        rvHourlyForecast.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (Math.abs(dx) < 3) return;
+                for (int i = 0; i < recyclerView.getChildCount(); i++) {
+                    View child = recyclerView.getChildAt(i);
+
+                    // Hủy animation cũ trước khi đặt vị trí mới
+                    SpringAnimation anim = (SpringAnimation) child.getTag(R.id.rvHourlyForecast);
+                    if (anim != null && anim.isRunning()) {
+                        anim.cancel();
+                    }
+
+                    // Đặt lệch nhẹ theo vị trí thẻ (không cộng dồn)
+                    float offset = dx * (0.4f + i * 0.25f);
+                    child.setTranslationX(offset);
+
+                    // Lò xo kéo thẻ nảy về vị trí gốc
+                    if (anim == null) {
+                        anim = new SpringAnimation(child, SpringAnimation.TRANSLATION_X, 0);
+                        anim.getSpring().setDampingRatio(SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY);
+                        anim.getSpring().setStiffness(SpringForce.STIFFNESS_MEDIUM);
+                        child.setTag(R.id.rvHourlyForecast, anim);
+                    }
+                    anim.start();
+                }
+            }
+        });
 
         // Khoi tao RecyclerView du bao hang ngay
         rvDailyForecast = view.findViewById(R.id.rvDailyForecast);
@@ -52,13 +85,42 @@ public class ForecastFragment extends Fragment {
         dailyAdapter = new DailyForecastAdapter();
         rvDailyForecast.setAdapter(dailyAdapter);
 
+        // Hiệu ứng nảy đàn hồi cho các thẻ hàng ngày khi cuộn dọc
+        androidx.core.widget.NestedScrollView nestedScrollView = view.findViewById(R.id.nestedScrollViewForecast);
+        nestedScrollView.setOnScrollChangeListener((androidx.core.widget.NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            int deltaY = scrollY - oldScrollY;
+            if (Math.abs(deltaY) < 3) return;
+            for (int i = 0; i < rvDailyForecast.getChildCount(); i++) {
+                View child = rvDailyForecast.getChildAt(i);
+
+                // Hủy animation cũ trước khi đặt vị trí mới
+                SpringAnimation anim = (SpringAnimation) child.getTag(R.id.rvDailyForecast);
+                if (anim != null && anim.isRunning()) {
+                    anim.cancel();
+                }
+
+                // Đặt lệch nhẹ theo vị trí thẻ (không cộng dồn)
+                float offset = deltaY * (0.4f + i * 0.25f);
+                child.setTranslationY(offset);
+
+                // Lò xo kéo thẻ nảy về vị trí gốc
+                if (anim == null) {
+                    anim = new SpringAnimation(child, SpringAnimation.TRANSLATION_Y, 0);
+                    anim.getSpring().setDampingRatio(SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY);
+                    anim.getSpring().setStiffness(SpringForce.STIFFNESS_MEDIUM);
+                    child.setTag(R.id.rvDailyForecast, anim);
+                }
+                anim.start();
+            }
+        });
+
         fetchForecast();
 
         return view;
     }
 
     private void fetchForecast() {
-        ForecastApiService apiService = RetrofitClient.getClient().create(ForecastApiService.class);
+        ForecastApiService apiService = ForecastRetrofitClient.getClient().create(ForecastApiService.class);
 
         String units = isCelsius() ? "metric" : "imperial";
         Call<ForecastResponse> call = apiService.getForecast(MOCK_LAT, MOCK_LON, API_KEY, units, "vi");
@@ -99,6 +161,7 @@ public class ForecastFragment extends Fragment {
         });
     }
 
-    // Phuong thuc lay don vi nhiet do hien tai
-    private boolean isCelsius() { return true; }
+    private boolean isCelsius() {
+        return true;
+    }
 }

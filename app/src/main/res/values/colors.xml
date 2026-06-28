@@ -9,4 +9,10 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
+
+    <!-- Màu sắc giao diện phần dự báo thời tiết -->
+    <color name="colorOverlayDark">#33000000</color> <!-- Lớp phủ tối nhẹ cho nền -->
+    <color name="colorGlassCard">#33FFFFFF</color>    <!-- Màu nền dạng kính mờ -->
+    <color name="colorTextShadow">#CC000000</color>   <!-- Màu bóng đổ chữ để tăng tương phản -->
+    <color name="colorRainChance">#40C4FF</color>     <!-- Màu hiển thị tỉ lệ mưa -->
 </resources>
