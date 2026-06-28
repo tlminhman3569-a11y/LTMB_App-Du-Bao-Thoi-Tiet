@@ -23,8 +23,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="09:00"
-            android:textColor="@color/colorTextSecondary"
-            android:textSize="@dimen/text_size_body" />
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:shadowColor="@color/colorTextShadow"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
 
         <!-- Icon thời tiết -->
         <ImageView
@@ -36,15 +41,35 @@
             android:src="@android:drawable/ic_menu_report_image"
             android:contentDescription="Icon thời tiết" />
 
+        <!-- Tỉ lệ mưa (PoP) -->
+        <TextView
+            android:id="@+id/tvHourlyPop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="30%"
+            android:textColor="@color/colorRainChance"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"
+            android:shadowColor="@color/colorTextShadow"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3"
+            android:visibility="invisible" />
+
         <!-- Nhiệt độ -->
         <TextView
             android:id="@+id/tvHourlyTemp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="30°"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="@dimen/text_size_body"
-            android:textStyle="bold" />
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:shadowColor="@color/colorTextShadow"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

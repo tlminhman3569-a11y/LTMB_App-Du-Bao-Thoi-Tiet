@@ -9,4 +9,10 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
+
+    <!-- Mau cua TV2 (ForecastFragment) - Tuan thu Design System -->
+    <color name="colorOverlayDark">#33000000</color>      <!-- Lop phu den mo 20% -->
+    <color name="colorGlassCard">#33FFFFFF</color>         <!-- Nen the kinh mo trang 20% -->
+    <color name="colorTextShadow">#80000000</color>        <!-- Bong chu den mo 50% -->
+    <color name="colorRainChance">#64B5F6</color>          <!-- Mau xanh duong cho % mua -->
 </resources>

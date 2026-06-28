@@ -27,9 +27,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.2"
             android:text="Chủ Nhật"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="@dimen/text_size_body"
-            android:textStyle="bold" />
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:shadowColor="@color/colorTextShadow"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
 
         <!-- Icon thời tiết -->
         <ImageView
@@ -48,10 +52,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.2"
             android:text="25°/32°"
-            android:textColor="@color/colorTextPrimary"
-            android:textSize="@dimen/text_size_body"
+            android:textColor="@color/white"
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:gravity="center" />
+            android:gravity="center"
+            android:shadowColor="@color/colorTextShadow"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
 
         <!-- Mô tả -->
         <TextView
@@ -60,11 +68,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.5"
             android:text="Mưa nhẹ"
-            android:textColor="@color/colorTextSecondary"
-            android:textSize="@dimen/text_size_body"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
             android:gravity="end"
             android:ellipsize="end"
-            android:maxLines="1" />
+            android:maxLines="1"
+            android:shadowColor="@color/colorTextShadow"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="3" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
