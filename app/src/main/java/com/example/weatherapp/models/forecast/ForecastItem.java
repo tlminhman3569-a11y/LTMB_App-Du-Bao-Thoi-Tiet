@@ -1,6 +1,5 @@
 package com.example.weatherapp.models.forecast;
 
-import com.example.weatherapp.models.common.Main;
 import com.example.weatherapp.models.common.Weather;
 import com.example.weatherapp.models.common.Wind;
 import com.google.gson.annotations.SerializedName;
@@ -9,7 +8,7 @@ import java.util.List;
 public class ForecastItem {
 
     @SerializedName("main")
-    private Main main;
+    private ForecastMain main;
 
     @SerializedName("weather")
     private List<Weather> weather;
@@ -20,7 +19,7 @@ public class ForecastItem {
     @SerializedName("dt_txt")
     private String dtTxt;
 
-    public Main getMain() {
+    public ForecastMain getMain() {
         return main;
     }
 
