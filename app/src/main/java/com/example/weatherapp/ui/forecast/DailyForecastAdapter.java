@@ -62,24 +62,24 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
             holder.tvDailyTemp.setText(tempMin + unit + "/" + tempMax + unit);
         }
 
+        holder.tvDailyDesc.setText("");
+        holder.tvDailyPop.setText("");
+        holder.tvDailyPop.setVisibility(View.GONE);
+
         // Hiển thị mô tả và load icon bằng Glide
         if (item.getWeather() != null && !item.getWeather().isEmpty()) {
             String desc = item.getWeather().get(0).getDescription();
             if (desc != null && !desc.isEmpty()) {
                 desc = desc.substring(0, 1).toUpperCase() + desc.substring(1);
             }
+            holder.tvDailyDesc.setText(desc);
             
-            // Hiển thị phần trăm khả năng mưa có màu sắc phân biệt
+            // Hiển thị riêng tỉ lệ mưa để không bị rút gọn thành dấu ba chấm
             double pop = item.getPop();
             if (pop > 0) {
                 int popPercent = (int) Math.round(pop * 100);
-                int colorRes = androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.colorRainChance);
-                String hexColor = String.format("#%06X", (0xFFFFFF & colorRes));
-                
-                String htmlDesc = desc + " <font color='" + hexColor + "'>(" + popPercent + "%)</font>";
-                holder.tvDailyDesc.setText(android.text.Html.fromHtml(htmlDesc, android.text.Html.FROM_HTML_MODE_LEGACY));
-            } else {
-                holder.tvDailyDesc.setText(desc);
+                holder.tvDailyPop.setText("(" + popPercent + "%)");
+                holder.tvDailyPop.setVisibility(View.VISIBLE);
             }
 
             String iconCode = item.getWeather().get(0).getIcon();
@@ -97,7 +97,7 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
     }
 
     static class DailyViewHolder extends RecyclerView.ViewHolder {
-        TextView tvDailyDate, tvDailyTemp, tvDailyDesc;
+        TextView tvDailyDate, tvDailyTemp, tvDailyDesc, tvDailyPop;
         ImageView imgDailyIcon;
         com.google.android.material.card.MaterialCardView cardDailyView;
 
@@ -106,6 +106,7 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
             tvDailyDate = itemView.findViewById(R.id.tvDailyDate);
             tvDailyTemp = itemView.findViewById(R.id.tvDailyTemp);
             tvDailyDesc = itemView.findViewById(R.id.tvDailyDesc);
+            tvDailyPop = itemView.findViewById(R.id.tvDailyPop);
             imgDailyIcon = itemView.findViewById(R.id.imgDailyIcon);
             cardDailyView = itemView.findViewById(R.id.cardDailyView);
         }

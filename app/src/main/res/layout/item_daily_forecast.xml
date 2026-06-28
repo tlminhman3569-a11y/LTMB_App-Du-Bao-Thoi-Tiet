@@ -61,23 +61,45 @@
             android:shadowDy="1"
             android:shadowRadius="3" />
 
-        <!-- Mô tả -->
-        <TextView
-            android:id="@+id/tvDailyDesc"
+        <!-- Mô tả và tỉ lệ mưa -->
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1.5"
-            android:text="Mưa nhẹ"
-            android:textColor="@color/white"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:gravity="end"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:shadowColor="@color/colorTextShadow"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="3" />
+            android:gravity="end|center_vertical"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvDailyDesc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mưa nhẹ"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:gravity="end"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:shadowColor="@color/colorTextShadow"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3" />
+
+            <TextView
+                android:id="@+id/tvDailyPop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="(100%)"
+                android:textColor="@color/colorRainChance"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:gravity="end"
+                android:shadowColor="@color/colorTextShadow"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="3"
+                android:visibility="gone" />
+        </LinearLayout>
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
