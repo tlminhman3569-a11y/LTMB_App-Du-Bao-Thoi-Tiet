@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.weatherapp.R;
 import com.example.weatherapp.api.ForecastApiService;
-import com.example.weatherapp.api.RetrofitClient;
+import com.example.weatherapp.api.ForecastRetrofitClient;
 import com.example.weatherapp.models.forecast.ForecastItem;
 import com.example.weatherapp.models.forecast.ForecastResponse;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import retrofit2.Response;
 
 public class ForecastFragment extends Fragment {
 
-    // Khoi tao toa do mac dinh
+    // Toa do cung TP.HCM (Giai phap doc lap - Mocking UC1)
     private static final double MOCK_LAT = 10.823;
     private static final double MOCK_LON = 106.629;
 
@@ -58,8 +58,9 @@ public class ForecastFragment extends Fragment {
     }
 
     private void fetchForecast() {
-        ForecastApiService apiService = RetrofitClient.getClient().create(ForecastApiService.class);
+        ForecastApiService apiService = ForecastRetrofitClient.getClient().create(ForecastApiService.class);
 
+        // Su dung toa do cung TP.HCM (Mocking UC1 - khong phu thuoc GPS cua TV1)
         String units = isCelsius() ? "metric" : "imperial";
         Call<ForecastResponse> call = apiService.getForecast(MOCK_LAT, MOCK_LON, API_KEY, units, "vi");
 

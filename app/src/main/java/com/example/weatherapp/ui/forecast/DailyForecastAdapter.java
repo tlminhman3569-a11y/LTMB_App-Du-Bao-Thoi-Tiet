@@ -33,7 +33,9 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
     @Override
     public void onBindViewHolder(@NonNull DailyViewHolder holder, int position) {
         ForecastItem item = dailyList.get(position);
-        holder.cardDailyView.setCardBackgroundColor(android.graphics.Color.parseColor("#26FFFFFF"));
+        // Nen kinh mo trang (Glassmorphism) - lay mau tu Design System
+        holder.cardDailyView.setCardBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.colorGlassCard));
 
         // Hiển thị ngày (ví dụ: "2025-06-28 12:00:00" -> "28/06")
         String dtTxt = item.getDtTxt();
@@ -66,6 +68,14 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
             if (desc != null && !desc.isEmpty()) {
                 desc = desc.substring(0, 1).toUpperCase() + desc.substring(1);
             }
+            
+            // Them phan tram kha nang co mua neu > 0
+            double pop = item.getPop();
+            if (pop > 0) {
+                int popPercent = (int) Math.round(pop * 100);
+                desc = desc + " (" + popPercent + "%)";
+            }
+            
             holder.tvDailyDesc.setText(desc);
 
             String iconCode = item.getWeather().get(0).getIcon();

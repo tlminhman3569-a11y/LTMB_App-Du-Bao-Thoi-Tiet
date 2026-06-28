@@ -33,7 +33,9 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
     @Override
     public void onBindViewHolder(@NonNull HourlyViewHolder holder, int position) {
         ForecastItem item = hourlyList.get(position);
-        holder.cardHourlyView.setCardBackgroundColor(android.graphics.Color.parseColor("#26FFFFFF"));
+        // Nen kinh mo trang (Glassmorphism) - lay mau tu Design System
+        holder.cardHourlyView.setCardBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.colorGlassCard));
 
         // Hiển thị giờ (ví dụ: "2025-06-28 09:00:00" -> "09:00")
         String dtTxt = item.getDtTxt();
@@ -49,7 +51,7 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
             holder.tvHourlyTemp.setText(temp + unit);
         }
 
-        // Load icon bằng Glide
+        // Load icon bang Glide (su dung bo icon mau sac sinh dong)
         if (item.getWeather() != null && !item.getWeather().isEmpty()) {
             String iconCode = item.getWeather().get(0).getIcon();
             String iconUrl = "https://openweathermap.org/img/wn/" + iconCode + "@4x.png";
@@ -57,6 +59,17 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
                     .load(iconUrl)
                     .placeholder(android.R.drawable.ic_menu_report_image)
                     .into(holder.imgHourlyIcon);
+        }
+
+        // Hien thi kha nang co mua (Probability of Precipitation)
+        double pop = item.getPop();
+        if (pop > 0) {
+            int popPercent = (int) Math.round(pop * 100);
+            holder.tvHourlyPop.setText(popPercent + "%");
+            holder.tvHourlyPop.setVisibility(View.VISIBLE);
+        } else {
+            // Dung INVISIBLE thay vi GONE de giu nguyen khoang trong, giup cac the co chieu cao bang nhau
+            holder.tvHourlyPop.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -66,7 +79,7 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
     }
 
     static class HourlyViewHolder extends RecyclerView.ViewHolder {
-        TextView tvHourlyTime, tvHourlyTemp;
+        TextView tvHourlyTime, tvHourlyTemp, tvHourlyPop;
         ImageView imgHourlyIcon;
         com.google.android.material.card.MaterialCardView cardHourlyView;
 
@@ -74,6 +87,7 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
             super(itemView);
             tvHourlyTime = itemView.findViewById(R.id.tvHourlyTime);
             tvHourlyTemp = itemView.findViewById(R.id.tvHourlyTemp);
+            tvHourlyPop = itemView.findViewById(R.id.tvHourlyPop);
             imgHourlyIcon = itemView.findViewById(R.id.imgHourlyIcon);
             cardHourlyView = itemView.findViewById(R.id.cardHourlyView);
         }
