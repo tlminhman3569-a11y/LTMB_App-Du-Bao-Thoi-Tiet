@@ -7,6 +7,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.weatherapp.R;
 import com.example.weatherapp.ui.forecast.ForecastFragment;
+import com.example.weatherapp.ui.search.SearchActivity;
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -32,10 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Chỗ cho TV3 ghép code SearchActivity
         btnSearch.setOnClickListener(v -> {
-            Toast.makeText(this, "[TV3] Sẽ chuyển sang SearchActivity", Toast.LENGTH_SHORT).show();
-            // Bỏ comment 2 dòng dưới khi TV3 làm xong
-            // Intent intent = new Intent(MainActivity.this, SearchActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+            startActivity(intent);
         });
 
         // Chỗ cho TV4 ghép code FavoriteActivity

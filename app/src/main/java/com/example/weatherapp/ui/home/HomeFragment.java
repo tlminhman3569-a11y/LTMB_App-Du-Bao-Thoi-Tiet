@@ -2,13 +2,11 @@ package com.example.weatherapp.ui.home;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -37,29 +35,25 @@ public class HomeFragment extends Fragment {
     private static final String PREFS_NAME = "WeatherCachePrefs";
     private static final String KEY_WEATHER_JSON = "cached_weather_json";
     private static final String KEY_CACHE_TIMESTAMP = "cache_timestamp";
-    private static final long CACHE_DURATION = 15 * 60 * 1000; // 15 phút tính bằng mili-giây
+    private static final long CACHE_DURATION = 15 * 60 * 1000;
 
-    // API Open Weather (https://home.openweathermap.org/api_keys)
     private final String API_KEY = "ec300b0837672f3a17c36026f68a0f00";
 
     private FusedLocationProviderClient fusedLocationClient;
 
-    // Các thành phần giao diện UI
     private TextView tvCityName, tvTemperature, tvWeatherDescription, tvHumidity, tvWindSpeed;
     private ImageView imgWeatherIcon;
     private View layoutBackground;
 
-    // Bộ phóng kích hoạt hộp thoại xin quyền của Android
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                 Boolean fineLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false);
                 Boolean coarseLocationGranted = result.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false);
 
-                if ((fineLocationGranted != null && fineLocationGranted) || (coarseLocationGranted != null && coarseLocationGranted)) {
-                    // Người dùng đã cho phép quyền chính xác
+                if ((fineLocationGranted != null && fineLocationGranted) ||
+                        (coarseLocationGranted != null && coarseLocationGranted)) {
                     getDeviceLocation();
                 } else {
-                    // Người dùng từ chối cấp quyền
                     Toast.makeText(getContext(), "Ứng dụng cần quyền vị trí để chạy!", Toast.LENGTH_LONG).show();
                     if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
                 }
@@ -67,66 +61,55 @@ public class HomeFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_current_weather, container, false);
 
-        // 1. Ánh xạ các View từ file XML sang code Java
-        tvCityName = view.findViewById(R.id.tvCityName);
-        tvTemperature = view.findViewById(R.id.tvTemperature);
+        // Ánh xạ View
+        tvCityName           = view.findViewById(R.id.tvCityName);
+        tvTemperature        = view.findViewById(R.id.tvTemperature);
         tvWeatherDescription = view.findViewById(R.id.tvWeatherDescription);
-        tvHumidity = view.findViewById(R.id.tvHumidity);
-        tvWindSpeed = view.findViewById(R.id.tvWindSpeed);
-        imgWeatherIcon = view.findViewById(R.id.imgWeatherIcon);
-        layoutBackground = view.findViewById(R.id.layoutBackground);
+        tvHumidity           = view.findViewById(R.id.tvHumidity);
+        tvWindSpeed          = view.findViewById(R.id.tvWindSpeed);
+        imgWeatherIcon       = view.findViewById(R.id.imgWeatherIcon);
+        layoutBackground     = view.findViewById(R.id.layoutBackground);
+        swipeRefreshLayout   = view.findViewById(R.id.swipeRefreshLayout);
+        sharedPreferences    = requireActivity().getSharedPreferences(PREFS_NAME,
+                android.content.Context.MODE_PRIVATE);
 
-        // Ánh xạ swipeRefreshLayout và sharedPreferences
-        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
-        sharedPreferences = requireActivity().getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE);
-
-        // 2. Khởi tạo công cụ định vị của Google
+        // Khởi tạo công cụ định vị
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
-        // 3. Bắt sự kiện vuốt để làm mới
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            // Khi vuốt, bỏ qua Cache và ép gọi API mới
-            checkLocationPermissions();
-        });
+        // Vuốt để làm mới
+        swipeRefreshLayout.setOnRefreshListener(this::checkLocationPermissions);
 
-        // Không gọi API luôn, kiểm tra cache trước
+        // Kiểm tra cache trước khi gọi API
         checkWeatherCache();
 
         return view;
     }
 
-    // Hàm kiểm tra cache
     private void checkWeatherCache() {
         String cachedJson = sharedPreferences.getString(KEY_WEATHER_JSON, null);
-        long cacheTime = sharedPreferences.getLong(KEY_CACHE_TIMESTAMP, 0);
-        long currentTime = System.currentTimeMillis();
+        long cacheTime    = sharedPreferences.getLong(KEY_CACHE_TIMESTAMP, 0);
+        long currentTime  = System.currentTimeMillis();
 
         if (cachedJson != null && (currentTime - cacheTime < CACHE_DURATION)) {
-            // Nếu cache còn hạn (chưa quá 15p), dùng Gson biến chuỗi về lại Object và hiển thị ngay
             Gson gson = new Gson();
             WeatherResponse cachedData = gson.fromJson(cachedJson, WeatherResponse.class);
-
-            //  Lấy tên thành phố từ Cache ra gán
             String savedCityName = sharedPreferences.getString("cached_city_name", "Không rõ địa điểm");
             tvCityName.setText(savedCityName);
-
             updateUI(cachedData);
         } else {
-            // Hết hạn hoặc chưa có dữ liệu -> Xin quyền & gọi mạng
             checkLocationPermissions();
         }
     }
 
-    // Hàm kiểm tra xem ứng dụng đã được cấp quyền vị trí chưa
     private void checkLocationPermissions() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            // Đã có quyền, tiến hành lấy vị trí
+        if (ContextCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             getDeviceLocation();
         } else {
-            // Chưa có quyền, hiển thị hộp thoại xin quyền
             locationPermissionLauncher.launch(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
@@ -134,33 +117,32 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // Hàm trực tiếp lấy tọa độ GPS của thiết bị
     private void getDeviceLocation() {
         try {
             fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
                 if (location != null) {
-                    // Lưu lại tọa độ cuối cùng để các thành phần giao diện khác có thể đồng bộ sử dụng
                     sharedPreferences.edit()
                             .putFloat("last_lat", (float) location.getLatitude())
                             .putFloat("last_lon", (float) location.getLongitude())
                             .apply();
 
-                    // 2. Lấy tọa độ thành công -> Bắn tọa độ sang hàm gọi API mạng
                     fetchCurrentWeather(location.getLatitude(), location.getLongitude());
 
-                    // 3. Dung Geocoder de lay ten dia phuong (Chay trong background thread de tranh ANR)
                     new Thread(() -> {
-                        android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), java.util.Locale.getDefault());
+                        android.location.Geocoder geocoder = new android.location.Geocoder(
+                                requireContext(), java.util.Locale.getDefault());
                         try {
-                            java.util.List<android.location.Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            java.util.List<android.location.Address> addresses =
+                                    geocoder.getFromLocation(location.getLatitude(),
+                                            location.getLongitude(), 1);
                             if (addresses != null && !addresses.isEmpty()) {
                                 String cityName = addresses.get(0).getAdminArea();
                                 if (getActivity() != null) {
-                                    getActivity().runOnUiThread(() -> {
-                                        tvCityName.setText(cityName);
-                                    });
+                                    getActivity().runOnUiThread(() -> tvCityName.setText(cityName));
                                 }
-                                sharedPreferences.edit().putString("cached_city_name", cityName).apply();
+                                sharedPreferences.edit()
+                                        .putString("cached_city_name", cityName)
+                                        .apply();
                             }
                         } catch (java.io.IOException e) {
                             e.printStackTrace();
@@ -169,7 +151,7 @@ public class HomeFragment extends Fragment {
 
                 } else {
                     Toast.makeText(getContext(), "Hãy bật GPS trên thiết bị!", Toast.LENGTH_SHORT).show();
-                    if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false); // Tắt loading nếu lỗi
+                    if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
                 }
             });
         } catch (SecurityException e) {
@@ -178,27 +160,19 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    // Hàm kết nối mạng gọi API thời tiết thực
     private void fetchCurrentWeather(double lat, double lon) {
-        // Tạo đường ống kết nối từ máy bơm chung RetrofitClient
         HomeApiService apiService = RetrofitClient.getClient().create(HomeApiService.class);
-
-        // Cấu hình các tham số truyền lên: tọa độ, key, hệ metric (độ C), ngôn ngữ tiếng Việt
         Call<WeatherResponse> call = apiService.getCurrentWeather(lat, lon, API_KEY, "metric", "vi");
 
-        // Thực hiện xếp hàng gọi ngầm dưới nền (Asynchronous Call) để không gây đơ màn hình app
         call.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                // TẮT HIỆU ỨNG LOADING CỦA SWIPE REFRESH
                 if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
-
                 if (response.isSuccessful() && response.body() != null) {
                     WeatherResponse weatherData = response.body();
 
-                    // LƯU DỮ LIỆU MỚI VÀO CACHE TRƯỚC KHI HIỂN THỊ
                     Gson gson = new Gson();
                     String jsonToCache = gson.toJson(weatherData);
                     sharedPreferences.edit()
@@ -214,56 +188,39 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                // Tắt vòng xoay nếu rớt mạng
                 if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
-
-                // Lỗi mất kết nối mạng, rớt mạng hoặc sai link gốc
-                Toast.makeText(getContext(), "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Lỗi kết nối mạng: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    // Hàm đổ dữ liệu vào TextView/ImgView
     private void updateUI(WeatherResponse data) {
-//        // Đổ tên thành phố
-//        tvCityName.setText(data.getName());
-
-        // Đổ nhiệt độ (Làm tròn thành số nguyên và thêm đơn vị °C dựa theo cài đặt)
         int tempInt = (int) Math.round(data.getMain().getTemp());
         tvTemperature.setText(tempInt + (isCelsius() ? "°C" : "°F"));
-
-        // Đổ độ ẩm
         tvHumidity.setText(data.getMain().getHumidity() + "%");
-
-        // Đổ tốc độ gió
         tvWindSpeed.setText(data.getWind().getSpeed() + (isKmH() ? " km/h" : " mph"));
 
-        // Kiểm tra và đổ phần mô tả thời tiết + tải icon bằng Glide
         if (data.getWeather() != null && !data.getWeather().isEmpty()) {
-            // Viết hoa chữ cái đầu của chuỗi mô tả thời tiết cho đẹp
             String desc = data.getWeather().get(0).getDescription();
             if (desc != null && !desc.isEmpty()) {
                 desc = desc.substring(0, 1).toUpperCase() + desc.substring(1);
             }
             tvWeatherDescription.setText(desc);
 
-            // Tải icon thời tiết động từ link của OpenWeatherMap thông qua Glide
             String iconCode = data.getWeather().get(0).getIcon();
-            String iconUrl = "https://openweathermap.org/img/wn/" + iconCode + "@2x.png";
-
+            String iconUrl  = "https://openweathermap.org/img/wn/" + iconCode + "@2x.png";
             Glide.with(this)
                     .load(iconUrl)
-                    .placeholder(android.R.drawable.ic_menu_report_image) // Ảnh hiển thị tạm lúc đang tải
+                    .placeholder(android.R.drawable.ic_menu_report_image)
                     .into(imgWeatherIcon);
 
-            // MỚI THÊM: Gọi hàm đổi màu nền
             updateDynamicBackground(iconCode);
         }
     }
 
-    // Hàm xử lý logic đổi ảnh nền động theo thời tiết
     private void updateDynamicBackground(String iconCode) {
         if (iconCode == null) return;
 
@@ -277,23 +234,20 @@ public class HomeFragment extends Fragment {
                 bgRes = R.drawable.bg_cloudy;
             } else if (iconCode.startsWith("04")) {
                 bgRes = R.drawable.bg_overcast;
-            } else if (iconCode.startsWith("09") || iconCode.startsWith("10") || iconCode.startsWith("11")) {
+            } else if (iconCode.startsWith("09") || iconCode.startsWith("10") ||
+                    iconCode.startsWith("11")) {
                 bgRes = R.drawable.bg_rainy;
             }
         }
-        
-        // Gan hinh nen cho toan bo Window thay vi chi FrameLayout hien tai de dong bo ca TV2
+
         if (getActivity() != null && getActivity().getWindow() != null) {
             getActivity().getWindow().setBackgroundDrawableResource(bgRes);
         }
-        
-        // Dat nen cua FrameLayout thanh trong suot de lo hinh Window
         if (layoutBackground != null) {
             layoutBackground.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         }
     }
 
-    // Phần giả lập trước cho UC 5 (Setting)
     private boolean isCelsius() { return true; }
-    private boolean isKmH() { return true; }
+    private boolean isKmH()     { return true; }
 }
