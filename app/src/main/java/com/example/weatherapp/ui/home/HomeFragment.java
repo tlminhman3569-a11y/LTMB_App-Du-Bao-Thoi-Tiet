@@ -139,10 +139,16 @@ public class HomeFragment extends Fragment {
         try {
             fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
                 if (location != null) {
-                    // 1. Lấy tọa độ thành công -> Bắn tọa độ sang hàm gọi API mạng
+                    // Lưu lại tọa độ cuối cùng để các thành phần giao diện khác có thể đồng bộ sử dụng
+                    sharedPreferences.edit()
+                            .putFloat("last_lat", (float) location.getLatitude())
+                            .putFloat("last_lon", (float) location.getLongitude())
+                            .apply();
+
+                    // 2. Lấy tọa độ thành công -> Bắn tọa độ sang hàm gọi API mạng
                     fetchCurrentWeather(location.getLatitude(), location.getLongitude());
 
-                    // 2. Dung Geocoder de lay ten dia phuong (Chay trong background thread de tranh ANR)
+                    // 3. Dung Geocoder de lay ten dia phuong (Chay trong background thread de tranh ANR)
                     new Thread(() -> {
                         android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), java.util.Locale.getDefault());
                         try {
@@ -259,28 +265,31 @@ public class HomeFragment extends Fragment {
 
     // Hàm xử lý logic đổi ảnh nền động theo thời tiết
     private void updateDynamicBackground(String iconCode) {
-        if (iconCode == null || layoutBackground == null) return;
+        if (iconCode == null) return;
 
+        int bgRes = R.drawable.bg_sunny;
         if (iconCode.endsWith("n")) {
-            // Ảnh ban đêm
-            layoutBackground.setBackgroundResource(R.drawable.bg_night);
+            bgRes = R.drawable.bg_night;
         } else {
             if (iconCode.startsWith("01")) {
-                // Ảnh trời nắng trong xanh
-                layoutBackground.setBackgroundResource(R.drawable.bg_sunny);
+                bgRes = R.drawable.bg_sunny;
             } else if (iconCode.startsWith("02") || iconCode.startsWith("03")) {
-                // Ảnh trời mây nhẹ, mây trắng bồng bềnh
-                layoutBackground.setBackgroundResource(R.drawable.bg_cloudy);
+                bgRes = R.drawable.bg_cloudy;
             } else if (iconCode.startsWith("04")) {
-                //  Ảnh bầu trời mây đen u ám, xám xịt
-                layoutBackground.setBackgroundResource(R.drawable.bg_overcast);
+                bgRes = R.drawable.bg_overcast;
             } else if (iconCode.startsWith("09") || iconCode.startsWith("10") || iconCode.startsWith("11")) {
-                // Ảnh trời mưa bão
-                layoutBackground.setBackgroundResource(R.drawable.bg_rainy);
-            } else {
-                // Mặc định
-                layoutBackground.setBackgroundResource(R.drawable.bg_sunny);
+                bgRes = R.drawable.bg_rainy;
             }
+        }
+        
+        // Gan hinh nen cho toan bo Window thay vi chi FrameLayout hien tai de dong bo ca TV2
+        if (getActivity() != null && getActivity().getWindow() != null) {
+            getActivity().getWindow().setBackgroundDrawableResource(bgRes);
+        }
+        
+        // Dat nen cua FrameLayout thanh trong suot de lo hinh Window
+        if (layoutBackground != null) {
+            layoutBackground.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         }
     }
 

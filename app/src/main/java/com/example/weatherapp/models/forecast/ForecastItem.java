@@ -35,4 +35,11 @@ public class ForecastItem {
     public String getDtTxt() {
         return dtTxt;
     }
+
+    @SerializedName("pop")
+    private double pop;
+
+    public double getPop() {
+        return pop;
+    }
 }

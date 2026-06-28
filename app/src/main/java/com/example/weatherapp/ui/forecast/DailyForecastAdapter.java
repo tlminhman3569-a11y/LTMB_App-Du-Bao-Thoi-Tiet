@@ -33,7 +33,9 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
     @Override
     public void onBindViewHolder(@NonNull DailyViewHolder holder, int position) {
         ForecastItem item = dailyList.get(position);
-        holder.cardDailyView.setCardBackgroundColor(android.graphics.Color.parseColor("#26FFFFFF"));
+        // Thiết lập màu nền kính mờ cho thẻ
+        holder.cardDailyView.setCardBackgroundColor(
+                androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.colorGlassCard));
 
         // Hiển thị ngày (ví dụ: "2025-06-28 12:00:00" -> "28/06")
         String dtTxt = item.getDtTxt();
@@ -66,7 +68,19 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
             if (desc != null && !desc.isEmpty()) {
                 desc = desc.substring(0, 1).toUpperCase() + desc.substring(1);
             }
-            holder.tvDailyDesc.setText(desc);
+            
+            // Hiển thị phần trăm khả năng mưa có màu sắc phân biệt
+            double pop = item.getPop();
+            if (pop > 0) {
+                int popPercent = (int) Math.round(pop * 100);
+                int colorRes = androidx.core.content.ContextCompat.getColor(holder.itemView.getContext(), R.color.colorRainChance);
+                String hexColor = String.format("#%06X", (0xFFFFFF & colorRes));
+                
+                String htmlDesc = desc + " <font color='" + hexColor + "'>(" + popPercent + "%)</font>";
+                holder.tvDailyDesc.setText(android.text.Html.fromHtml(htmlDesc, android.text.Html.FROM_HTML_MODE_LEGACY));
+            } else {
+                holder.tvDailyDesc.setText(desc);
+            }
 
             String iconCode = item.getWeather().get(0).getIcon();
             String iconUrl = "https://openweathermap.org/img/wn/" + iconCode + "@4x.png";
