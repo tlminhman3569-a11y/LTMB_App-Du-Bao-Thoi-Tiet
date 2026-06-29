@@ -60,12 +60,26 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         String iconUrl = "https://openweathermap.org/img/wn/" + item.getIconCode() + "@2x.png";
         Glide.with(context).load(iconUrl).into(holder.ivWeatherIcon);
 
+        updateFavoriteIcon(holder, item);
+
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(item);
         });
         holder.btnFavorite.setOnClickListener(v -> {
+            item.setFavorite(!item.isFavorite());
+            updateFavoriteIcon(holder, item);
             if (listener != null) listener.onFavoriteClick(item);
         });
+    }
+
+    private void updateFavoriteIcon(ViewHolder holder, SearchResultItem item) {
+        if (item.isFavorite()) {
+            holder.btnFavorite.setImageResource(android.R.drawable.btn_star_big_on);
+            holder.btnFavorite.setColorFilter(0xFFFFB300); // vàng - đã thích
+        } else {
+            holder.btnFavorite.setImageResource(android.R.drawable.btn_star_big_off);
+            holder.btnFavorite.setColorFilter(0xFF9E9E9E); // xám - chưa thích
+        }
     }
 
     @Override

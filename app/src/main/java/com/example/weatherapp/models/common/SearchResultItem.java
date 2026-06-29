@@ -6,6 +6,7 @@ public class SearchResultItem {
     private double temperature;
     private String weatherDesc;
     private String iconCode;
+    private boolean isFavorite = false;
 
     public SearchResultItem(String cityName, String country, double temperature,
                             String weatherDesc, String iconCode) {
@@ -21,4 +22,6 @@ public class SearchResultItem {
     public double getTemperature() { return temperature; }
     public String getWeatherDesc() { return weatherDesc; }
     public String getIconCode() { return iconCode; }
+    public boolean isFavorite() { return isFavorite; }
+    public void setFavorite(boolean favorite) { isFavorite = favorite; }
 }

@@ -15,6 +15,7 @@ import androidx.dynamicanimation.animation.SpringForce;
 import com.example.weatherapp.R;
 import com.example.weatherapp.api.ForecastApiService;
 import com.example.weatherapp.api.ForecastRetrofitClient;
+import com.example.weatherapp.api.Constants;
 import com.example.weatherapp.models.forecast.ForecastItem;
 import com.example.weatherapp.models.forecast.ForecastResponse;
 import java.util.ArrayList;
@@ -29,8 +30,7 @@ public class ForecastFragment extends Fragment {
     private static final double MOCK_LAT = 10.823;
     private static final double MOCK_LON = 106.629;
 
-    // API Key
-    private final String API_KEY = "ec300b0837672f3a17c36026f68a0f00";
+    // API Key dùng chung - xem Constants.java
 
     private RecyclerView rvHourlyForecast;
     private RecyclerView rvDailyForecast;
@@ -123,7 +123,7 @@ public class ForecastFragment extends Fragment {
         ForecastApiService apiService = ForecastRetrofitClient.getClient().create(ForecastApiService.class);
 
         String units = "metric";
-        Call<ForecastResponse> call = apiService.getForecast(MOCK_LAT, MOCK_LON, API_KEY, units, "vi");
+        Call<ForecastResponse> call = apiService.getForecast(MOCK_LAT, MOCK_LON, Constants.API_KEY, units, "vi");
 
         call.enqueue(new Callback<ForecastResponse>() {
             @Override
@@ -131,7 +131,7 @@ public class ForecastFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     List<ForecastItem> fullList = response.body().getList();
                     if (fullList != null && !fullList.isEmpty()) {
-                        
+
                         // Lay du lieu du bao hang gio
                         List<ForecastItem> hourlyList = new ArrayList<>();
                         for (int i = 0; i < Math.min(8, fullList.size()); i++) {
