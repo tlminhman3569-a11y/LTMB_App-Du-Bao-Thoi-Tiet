@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
 import com.example.weatherapp.models.forecast.ForecastItem;
+import com.example.weatherapp.utils.WeatherUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +49,14 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
         // Hiển thị nhiệt độ
         if (item.getMain() != null) {
             int temp = (int) Math.round(item.getMain().getTemp());
-            String unit = isCelsius() ? "°" : "°F";
+            String unit;
+
+            if (WeatherUtils.isCelsius(holder.itemView.getContext())) {
+                unit = "°"; // Giữ nguyên kí hiệu độ cho gọn giao diện theo code cũ của đồng đội
+            } else {
+                temp = WeatherUtils.convertCelsiusToFahrenheit(temp); // Đổi sang độ F
+                unit = "°F";
+            }
             holder.tvHourlyTemp.setText(temp + unit);
         }
 
@@ -108,5 +117,5 @@ public class HourlyForecastAdapter extends RecyclerView.Adapter<HourlyForecastAd
         }
     }
 
-    private boolean isCelsius() { return true; }
+//    private boolean isCelsius() { return true; }
 }
