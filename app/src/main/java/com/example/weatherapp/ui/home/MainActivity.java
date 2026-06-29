@@ -6,8 +6,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.weatherapp.R;
+import com.example.weatherapp.ui.forecast.ForecastFragment;
+import com.example.weatherapp.ui.search.SearchActivity;
 import com.example.weatherapp.ui.settings.SettingsActivity;
-import com.example.weatherapp.worker.WeatherWorker;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,10 +19,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Việc của TV1 Nạp mảnh ghép HomeFragment vào khung trên
+        // Nap HomeFragment vao khung tren
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container_current_weather, new HomeFragment())
+                    .replace(R.id.container_forecast, new ForecastFragment())
                     .commit();
         }
 
@@ -32,10 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Chỗ cho TV3 ghép code SearchActivity
         btnSearch.setOnClickListener(v -> {
-            Toast.makeText(this, "[TV3] Sẽ chuyển sang SearchActivity", Toast.LENGTH_SHORT).show();
-            // Bỏ comment 2 dòng dưới khi TV3 làm xong
-            // Intent intent = new Intent(MainActivity.this, SearchActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(MainActivity.this, SearchActivity.class);
+            startActivity(intent);
         });
 
         // Chỗ cho TV4 ghép code FavoriteActivity

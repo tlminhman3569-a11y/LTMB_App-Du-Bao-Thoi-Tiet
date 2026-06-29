@@ -22,6 +22,7 @@ import com.example.weatherapp.R;
 import com.example.weatherapp.api.HomeApiService;
 import com.example.weatherapp.api.RetrofitClient;
 import com.example.weatherapp.models.common.WeatherResponse;
+import com.example.weatherapp.utils.WeatherUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
@@ -139,22 +140,28 @@ public class HomeFragment extends Fragment {
         try {
             fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
                 if (location != null) {
-                    // 1. Lấy tọa độ thành công -> Bắn tọa độ sang hàm gọi API mạng
+                    sharedPreferences.edit()
+                            .putFloat("last_lat", (float) location.getLatitude())
+                            .putFloat("last_lon", (float) location.getLongitude())
+                            .apply();
+
                     fetchCurrentWeather(location.getLatitude(), location.getLongitude());
 
-                    // 2. Dung Geocoder de lay ten dia phuong (Chay trong background thread de tranh ANR)
                     new Thread(() -> {
-                        android.location.Geocoder geocoder = new android.location.Geocoder(requireContext(), java.util.Locale.getDefault());
+                        android.location.Geocoder geocoder = new android.location.Geocoder(
+                                requireContext(), java.util.Locale.getDefault());
                         try {
-                            java.util.List<android.location.Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            java.util.List<android.location.Address> addresses =
+                                    geocoder.getFromLocation(location.getLatitude(),
+                                            location.getLongitude(), 1);
                             if (addresses != null && !addresses.isEmpty()) {
                                 String cityName = addresses.get(0).getAdminArea();
                                 if (getActivity() != null) {
-                                    getActivity().runOnUiThread(() -> {
-                                        tvCityName.setText(cityName);
-                                    });
+                                    getActivity().runOnUiThread(() -> tvCityName.setText(cityName));
                                 }
-                                sharedPreferences.edit().putString("cached_city_name", cityName).apply();
+                                sharedPreferences.edit()
+                                        .putString("cached_city_name", cityName)
+                                        .apply();
                             }
                         } catch (java.io.IOException e) {
                             e.printStackTrace();
@@ -228,29 +235,46 @@ public class HomeFragment extends Fragment {
         int tempInt = (int) Math.round(data.getMain().getTemp());
         //tvTemperature.setText(tempInt + (isCelsius() ? "°C" : "°F"));
 
-        if (isCelsius()) {
-            // Nếu là độ C -> Hiển thị bình thường
+//        if (isCelsius()) {
+//            // Nếu là độ C -> Hiển thị bình thường
+//            tvTemperature.setText(tempInt + "°C");
+//        } else {
+//            // Nếu là độ F -> Đổi công thức: F = C * 1.8 + 32
+//            int tempInFahrenheit = (int) Math.round(tempInt * 1.8 + 32);
+//            tvTemperature.setText(tempInFahrenheit + "°F");
+//        }
+//
+//        // Đổ độ ẩm
+//        tvHumidity.setText(data.getMain().getHumidity() + "%");
+//
+//        // Đổ tốc độ gió
+//        //tvWindSpeed.setText(data.getWind().getSpeed() + (isKmH() ? " km/h" : " mph"));
+//
+//        double windSpeed = data.getWind().getSpeed();
+//        if (isKmH()) {
+//            // Nếu chọn km/h -> Hiển thị đơn vị km/h
+//            tvWindSpeed.setText(String.format("%.1f Km/h", windSpeed));
+//        } else {
+//            // Nếu chọn mph -> Quy đổi đơn vị: mph = km/h / 1.60934
+//            double speedInMph = windSpeed / 1.60934;
+//            tvWindSpeed.setText(String.format("%.1f Mph", speedInMph));
+//        }
+
+        //Refactor lại code: Gọi WeatherUtils xử lý điều kiện chọn hiển thị độ C hoặc km/h hay không
+        if (WeatherUtils.isCelsius(getContext())) {
             tvTemperature.setText(tempInt + "°C");
         } else {
-            // Nếu là độ F -> Đổi công thức: F = C * 1.8 + 32
-            int tempInFahrenheit = (int) Math.round(tempInt * 1.8 + 32);
+            int tempInFahrenheit = WeatherUtils.convertCelsiusToFahrenheit(tempInt);
             tvTemperature.setText(tempInFahrenheit + "°F");
         }
 
-        // Đổ độ ẩm
-        tvHumidity.setText(data.getMain().getHumidity() + "%");
-
-        // Đổ tốc độ gió
-        //tvWindSpeed.setText(data.getWind().getSpeed() + (isKmH() ? " km/h" : " mph"));
-
+        // Đổ tốc độ gió (Gọi qua lớp tiện ích)
         double windSpeed = data.getWind().getSpeed();
-        if (isKmH()) {
-            // Nếu chọn km/h -> Hiển thị đơn vị km/h
-            tvWindSpeed.setText(String.format("%.1f Km/h", windSpeed));
+        if (WeatherUtils.isKmH(getContext())) {
+            tvWindSpeed.setText(String.format("%.1f km/h", windSpeed));
         } else {
-            // Nếu chọn mph -> Quy đổi đơn vị: mph = km/h / 1.60934
-            double speedInMph = windSpeed / 1.60934;
-            tvWindSpeed.setText(String.format("%.1f Mph", speedInMph));
+            double speedInMph = WeatherUtils.convertKmhToMph(windSpeed);
+            tvWindSpeed.setText(String.format("%.1f mph", speedInMph));
         }
 
         // Kiểm tra và đổ phần mô tả thời tiết + tải icon bằng Glide
@@ -279,43 +303,44 @@ public class HomeFragment extends Fragment {
 
     // Hàm xử lý logic đổi ảnh nền động theo thời tiết
     private void updateDynamicBackground(String iconCode) {
-        if (iconCode == null || layoutBackground == null) return;
+        if (iconCode == null) return;
 
+        int bgRes = R.drawable.bg_sunny;
         if (iconCode.endsWith("n")) {
-            // Ảnh ban đêm
-            layoutBackground.setBackgroundResource(R.drawable.bg_night);
+            bgRes = R.drawable.bg_night;
         } else {
             if (iconCode.startsWith("01")) {
-                // Ảnh trời nắng trong xanh
-                layoutBackground.setBackgroundResource(R.drawable.bg_sunny);
+                bgRes = R.drawable.bg_sunny;
             } else if (iconCode.startsWith("02") || iconCode.startsWith("03")) {
-                // Ảnh trời mây nhẹ, mây trắng bồng bềnh
-                layoutBackground.setBackgroundResource(R.drawable.bg_cloudy);
+                bgRes = R.drawable.bg_cloudy;
             } else if (iconCode.startsWith("04")) {
-                //  Ảnh bầu trời mây đen u ám, xám xịt
-                layoutBackground.setBackgroundResource(R.drawable.bg_overcast);
-            } else if (iconCode.startsWith("09") || iconCode.startsWith("10") || iconCode.startsWith("11")) {
-                // Ảnh trời mưa bão
-                layoutBackground.setBackgroundResource(R.drawable.bg_rainy);
-            } else {
-                // Mặc định
-                layoutBackground.setBackgroundResource(R.drawable.bg_sunny);
+                bgRes = R.drawable.bg_overcast;
+            } else if (iconCode.startsWith("09") || iconCode.startsWith("10") ||
+                    iconCode.startsWith("11")) {
+                bgRes = R.drawable.bg_rainy;
             }
+        }
+
+        if (getActivity() != null && getActivity().getWindow() != null) {
+            getActivity().getWindow().setBackgroundDrawableResource(bgRes);
+        }
+        if (layoutBackground != null) {
+            layoutBackground.setBackgroundColor(android.graphics.Color.TRANSPARENT);
         }
     }
 
     //UC-05: Chuyển đổi đơn vị đo độ ẩm độ C:
-    private boolean isCelsius() {
-        if (getActivity() == null) return true;
-        android.content.SharedPreferences prefs = getActivity().getSharedPreferences("WeatherSettingsPrefs", android.content.Context.MODE_PRIVATE);
-        return prefs.getBoolean("is_celsius", true);
-    }
-
-    private boolean isKmH() {
-        if (getActivity() == null) return true;
-        android.content.SharedPreferences prefs = getActivity().getSharedPreferences("WeatherSettingsPrefs", android.content.Context.MODE_PRIVATE);
-        return prefs.getBoolean("is_kmh", true);
-    }
+//    private boolean isCelsius() {
+//        if (getActivity() == null) return true;
+//        android.content.SharedPreferences prefs = getActivity().getSharedPreferences("WeatherSettingsPrefs", android.content.Context.MODE_PRIVATE);
+//        return prefs.getBoolean("is_celsius", true);
+//    }
+//
+//    private boolean isKmH() {
+//        if (getActivity() == null) return true;
+//        android.content.SharedPreferences prefs = getActivity().getSharedPreferences("WeatherSettingsPrefs", android.content.Context.MODE_PRIVATE);
+//        return prefs.getBoolean("is_kmh", true);
+//    }
     @Override
     public void onResume() {
         super.onResume();
