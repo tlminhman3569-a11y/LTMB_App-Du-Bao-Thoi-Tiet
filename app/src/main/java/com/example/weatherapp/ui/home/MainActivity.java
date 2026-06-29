@@ -7,6 +7,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.weatherapp.R;
 import com.example.weatherapp.ui.settings.SettingsActivity;
+import com.example.weatherapp.worker.WeatherWorker;
 
 public class MainActivity extends AppCompatActivity {
 

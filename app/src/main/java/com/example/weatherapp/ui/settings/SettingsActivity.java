@@ -6,16 +6,25 @@ import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
 import com.example.weatherapp.R;
+import com.example.weatherapp.worker.WeatherWorker;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+
+import java.util.concurrent.TimeUnit;
 
 public class SettingsActivity extends AppCompatActivity {
 
     private RadioGroup rgTemperature, rgWindSpeed;
     private RadioButton rbCelsius, rbFahrenheit, rbKmh, rbMph;
-    private SwitchMaterial switchDarkMode;
+    private SwitchMaterial switchDarkMode, switchNotification;
     private SharedPreferences sharedPreferences;
 
     public static final String SETTINGS_PREFS = "WeatherSettingsPrefs";
@@ -29,7 +38,7 @@ public class SettingsActivity extends AppCompatActivity {
         LinearLayout btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
-        // Ánh xạ các thành phần chọn đơn vị
+        // Ánh xạ các thành phần giao diện
         rgTemperature = findViewById(R.id.rgTemperature);
         rgWindSpeed = findViewById(R.id.rgWindSpeed);
         rbCelsius = findViewById(R.id.rbCelsius);
@@ -37,25 +46,13 @@ public class SettingsActivity extends AppCompatActivity {
         rbKmh = findViewById(R.id.rbKmh);
         rbMph = findViewById(R.id.rbMph);
         switchDarkMode = findViewById(R.id.switchDarkMode);
+        switchNotification = findViewById(R.id.switchNotification);
 
         sharedPreferences = getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE);
 
-        // 1. Đọc dữ liệu cũ để hiển thị dấu tích (Check) vào đúng ô
-        boolean isCelsius = sharedPreferences.getBoolean("is_celsius", true);
-        if (isCelsius) {
-            rbCelsius.setChecked(true);
-        } else {
-            rbFahrenheit.setChecked(true);
-        }
 
-        boolean isKmh = sharedPreferences.getBoolean("is_kmh", true);
-        if (isKmh) {
-            rbKmh.setChecked(true);
-        } else {
-            rbMph.setChecked(true);
-        }
-
-        switchDarkMode.setChecked(sharedPreferences.getBoolean("is_dark_mode", false));
+        // 1. Đọc dữ liệu cũ để hiển thị đúng trạng thái giao diện khi vừa vào màn hình
+        setupCurrentSettingsView();
 
         // 2. Lắng nghe sự kiện thay đổi của Nhóm Nhiệt độ
         rgTemperature.setOnCheckedChangeListener((group, checkedId) -> {
@@ -84,6 +81,73 @@ public class SettingsActivity extends AppCompatActivity {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
         });
+//        // 5. LẮNG NGHE SỰ KIỆN BẬT/TẮT THÔNG BÁO CHẠY NGẦM
+//        switchNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//            // Lưu trạng thái lựa chọn của người dùng vào máy
+//            sharedPreferences.edit().putBoolean("is_notification_enabled", isChecked).apply();
+//
+//            if (isChecked) {
+//                // 1. TÍNH TOÁN THỜI GIAN CHỜ ĐỂ BẮN THÔNG BÁO VÀO ĐÚNG 7 GIỜ SÁNG
+//                java.util.Calendar currentDate = java.util.Calendar.getInstance();
+//                java.util.Calendar dueDate = java.util.Calendar.getInstance();
+//
+//                // Thiết lập khung giờ vàng bạn muốn: 7 giờ 00 phút 0 giây sáng
+//                //Có thể chỉnh sửa khung giờ để Test
+//                dueDate.set(java.util.Calendar.HOUR_OF_DAY, 7);
+//                dueDate.set(java.util.Calendar.MINUTE, 0);
+//                dueDate.set(java.util.Calendar.SECOND, 0);
+//
+//                // Nếu thời điểm hiện tại đã qua 7 giờ sáng rồi, thì phải hẹn vào 7 giờ sáng NGÀY MAI
+//                if (dueDate.before(currentDate)) {
+//                    dueDate.add(java.util.Calendar.HOUR_OF_DAY, 24);
+//                }
+//
+//                // Tính số mili-giây chênh lệch cần phải chờ (Delay)
+//                long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();
+//
+//                // 2. THIẾT LẬP LỊCH CHẠY ĐỊNH KỲ MỖI 24 TIẾNG (MỖI NGÀY 1 LẦN)
+//                PeriodicWorkRequest weatherWorkRequest =
+//                        new PeriodicWorkRequest.Builder(WeatherWorker.class, 24, TimeUnit.HOURS)
+//                                .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS) // Ép chờ đến đúng 7:00 sáng mới chạy
+//                                .build();
+//
+//                // Đăng ký vào hệ thống
+//                WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+//                        "WeatherPeriodicCheck",
+//                        ExistingPeriodicWorkPolicy.REPLACE, // Dùng REPLACE để cập nhật lại mốc thời gian chờ mới nếu họ tắt đi bật lại
+//                        weatherWorkRequest
+//                );
+//
+//                Toast.makeText(this, "Đã hẹn lịch thông báo vào 7:00 sáng hàng ngày!", Toast.LENGTH_SHORT).show();
+//            } else {
+//                // Người dùng TẮT -> Hủy toàn bộ lịch chạy
+//                WorkManager.getInstance(this).cancelUniqueWork("WeatherPeriodicCheck");
+//                Toast.makeText(this, "Đã tắt thông báo thời tiết!", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+
+    }
+
+    private void setupCurrentSettingsView() {
+        // Đơn vị C hay F
+        if (sharedPreferences.getBoolean("is_celsius", true)) {
+            rbCelsius.setChecked(true);
+        } else {
+            rbFahrenheit.setChecked(true);
+        }
+
+        // Đơn vị km/h hay mph
+        if (sharedPreferences.getBoolean("is_kmh", true)) {
+            rbKmh.setChecked(true);
+        } else {
+            rbMph.setChecked(true);
+        }
+
+        // Chế độ tối (Mặc định ban đầu vào app là false - Tắt)
+        switchDarkMode.setChecked(sharedPreferences.getBoolean("is_dark_mode", false));
+
+        // Trạng thái thông báo (Mặc định ban đầu vào app là false - Tắt)
+        //switchNotification.setChecked(sharedPreferences.getBoolean("is_notification_enabled", false));
     }
     @Override
     public boolean onSupportNavigateUp() {

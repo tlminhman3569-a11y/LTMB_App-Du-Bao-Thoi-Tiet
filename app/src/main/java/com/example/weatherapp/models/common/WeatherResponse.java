@@ -35,4 +35,26 @@ public class WeatherResponse {
     public Wind getWind() {
         return wind;
     }
+
+    public static class Main {
+        @SerializedName("temp")
+        private double temp;
+
+        @SerializedName("humidity")
+        private int humidity;
+
+        public double getTemp() { return temp; }
+
+        public int getHumidity() { return humidity; }
+    }
+
+    public static class Weather {
+        @SerializedName("description")
+        private String description;
+        @SerializedName("icon")
+        private String icon;
+
+        public String getDescription() { return description; }
+        public String getIcon() { return icon; }
+    }
 }
