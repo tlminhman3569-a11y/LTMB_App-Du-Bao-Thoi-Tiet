@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
 import com.example.weatherapp.models.forecast.ForecastItem;
+import com.example.weatherapp.utils.WeatherUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,8 +60,15 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
         if (item.getMain() != null) {
             int tempMin = (int) Math.round(item.getMain().getTempMin());
             int tempMax = (int) Math.round(item.getMain().getTempMax());
-            String unit = isCelsius() ? "°" : "°F";
-            holder.tvDailyTemp.setText(tempMin + unit + "/" + tempMax + unit);
+            String unit;
+            if (WeatherUtils.isCelsius(holder.itemView.getContext())) {
+                unit = "°";
+            } else {
+                tempMin = WeatherUtils.convertCelsiusToFahrenheit(tempMin);
+                tempMax = WeatherUtils.convertCelsiusToFahrenheit(tempMax);
+                unit = "°F";
+            }
+            holder.tvDailyTemp.setText(tempMin + unit + " / " + tempMax + unit);
         }
 
         holder.tvDailyDesc.setText("");
@@ -112,5 +121,5 @@ public class DailyForecastAdapter extends RecyclerView.Adapter<DailyForecastAdap
         }
     }
 
-    private boolean isCelsius() { return true; }
+//    private boolean isCelsius() { return true; }
 }

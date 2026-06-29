@@ -122,7 +122,7 @@ public class ForecastFragment extends Fragment {
     private void fetchForecast() {
         ForecastApiService apiService = ForecastRetrofitClient.getClient().create(ForecastApiService.class);
 
-        String units = isCelsius() ? "metric" : "imperial";
+        String units = "metric";
         Call<ForecastResponse> call = apiService.getForecast(MOCK_LAT, MOCK_LON, API_KEY, units, "vi");
 
         call.enqueue(new Callback<ForecastResponse>() {
@@ -148,6 +148,10 @@ public class ForecastFragment extends Fragment {
                             }
                         }
                         dailyAdapter.setData(dailyList);
+
+                        // MỚI THÊM: Ép cả 2 adapter vẽ lại giao diện theo cấu hình C/F mới nhất của bạn
+                        hourlyAdapter.notifyDataSetChanged();
+                        dailyAdapter.notifyDataSetChanged();
                     }
                 } else {
                     Toast.makeText(getContext(), "Lỗi dữ liệu dự báo từ API!", Toast.LENGTH_SHORT).show();
@@ -161,7 +165,17 @@ public class ForecastFragment extends Fragment {
         });
     }
 
-    private boolean isCelsius() {
-        return true;
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Mỗi khi người dùng quay lại tab dự báo, ra lệnh cho các danh sách kiểm tra lại WeatherUtils và vẽ lại chữ C/F ngay lập tức
+        if (hourlyAdapter != null) {
+            hourlyAdapter.notifyDataSetChanged();
+        }
+        if (dailyAdapter != null) {
+            dailyAdapter.notifyDataSetChanged();
+        }
     }
+
+//    private boolean isCelsius() {return true;}
 }
