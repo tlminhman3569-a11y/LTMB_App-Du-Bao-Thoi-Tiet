@@ -23,11 +23,15 @@ public class WeatherResponse {
     @SerializedName("sys")
     private Sys sys;
 
+    @SerializedName("coord")
+    private Coord coord;
+
     public String getName() { return name; }
     public List<Weather> getWeather() { return weather; }
     public Main getMain() { return main; }
     public Wind getWind() { return wind; }
     public Sys getSys() { return sys; }
+    public Coord getCoord() { return coord; }
 
     public static class Main {
         @SerializedName("temp")
