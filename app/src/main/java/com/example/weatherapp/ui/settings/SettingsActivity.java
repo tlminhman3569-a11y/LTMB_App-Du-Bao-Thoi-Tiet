@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.weatherapp.R;
+import com.example.weatherapp.utils.WeatherUtils;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -124,14 +125,14 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void setupCurrentSettingsView() {
         // Đơn vị C hay F
-        if (sharedPreferences.getBoolean("is_celsius", true)) {
+        if (WeatherUtils.isCelsius(this)) {
             rbCelsius.setChecked(true);
         } else {
             rbFahrenheit.setChecked(true);
         }
 
-        // Đơn vị km/h hay mph
-        if (sharedPreferences.getBoolean("is_kmh", true)) {
+        // Đơn vị Tốc độ gió: km/h hay mph
+        if (WeatherUtils.isKmH(this)) {
             rbKmh.setChecked(true);
         } else {
             rbMph.setChecked(true);
