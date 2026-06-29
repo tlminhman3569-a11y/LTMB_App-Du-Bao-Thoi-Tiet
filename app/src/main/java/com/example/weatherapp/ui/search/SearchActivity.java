@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.weatherapp.R;
 import com.example.weatherapp.api.RetrofitClient;
+import com.example.weatherapp.api.Constants;
 import com.example.weatherapp.api.SearchApiService;
 import com.example.weatherapp.models.common.SearchResultItem;
 import com.example.weatherapp.models.common.WeatherResponse;
@@ -35,7 +36,6 @@ import retrofit2.Response;
 
 public class SearchActivity extends AppCompatActivity {
 
-    private static final String API_KEY = "f5ddeb6ee9905d6e63de7dc0e8742e18";
     private static final String PREF_NAME = "SearchHistory";
     private static final String PREF_KEY_HISTORY = "history";
     private static final int MAX_HISTORY = 10;
@@ -102,7 +102,8 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onFavoriteClick(SearchResultItem item) {
                 saveCityToDatabase(item.getCityName(), item.getCountry(),
-                        item.getTemperature(), item.getWeatherDesc(), item.getIconCode());
+                        item.getTemperature(), item.getWeatherDesc(), item.getIconCode(),
+                        item.isFavorite());
             }
         });
 
@@ -157,7 +158,7 @@ public class SearchActivity extends AppCompatActivity {
 
     private void performSearch(String cityName) {
         showLoadingState();
-        currentCall = searchApiService.searchCityWeather(cityName, API_KEY, "metric", "vi");
+        currentCall = searchApiService.searchCityWeather(cityName, Constants.API_KEY, "metric", "vi");
         currentCall.enqueue(new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
@@ -175,6 +176,13 @@ public class SearchActivity extends AppCompatActivity {
                     resultList.add(item);
                     showResultSection();
                 } else {
+                    // LOG để biết chính xác mã lỗi & nội dung trả về từ server
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        android.util.Log.e("SearchActivity", "API lỗi - code: " + response.code() + " | body: " + errorBody);
+                    } catch (Exception e) {
+                        android.util.Log.e("SearchActivity", "Không đọc được errorBody", e);
+                    }
                     showNoResultState();
                 }
             }
@@ -182,6 +190,7 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
                 if (call.isCanceled()) return;
+                android.util.Log.e("SearchActivity", "onFailure: " + t.getMessage(), t);
                 showNoResultState();
                 Toast.makeText(SearchActivity.this, "Lỗi kết nối. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
             }
@@ -258,8 +267,13 @@ public class SearchActivity extends AppCompatActivity {
 
     // Placeholder UC4 - TV4 implement sau
     private void saveCityToDatabase(String cityName, String country,
-                                    double temperature, String weatherDesc, String iconCode) {
-        Toast.makeText(this, "Đã bấm thích! ❤️ " + cityName, Toast.LENGTH_SHORT).show();
+                                    double temperature, String weatherDesc, String iconCode,
+                                    boolean isFavorite) {
+        if (isFavorite) {
+            Toast.makeText(this, "Đã bấm thích! ❤️ " + cityName, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Đã bỏ thích " + cityName, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

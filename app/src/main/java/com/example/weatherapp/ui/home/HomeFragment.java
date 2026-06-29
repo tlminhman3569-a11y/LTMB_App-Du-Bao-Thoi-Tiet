@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide;
 import com.example.weatherapp.R;
 import com.example.weatherapp.api.HomeApiService;
 import com.example.weatherapp.api.RetrofitClient;
+import com.example.weatherapp.api.Constants;
 import com.example.weatherapp.models.common.WeatherResponse;
 import com.example.weatherapp.utils.WeatherUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -41,7 +42,7 @@ public class HomeFragment extends Fragment {
     private static final long CACHE_DURATION = 15 * 60 * 1000; // 15 phút tính bằng mili-giây
 
     // API Open Weather (https://home.openweathermap.org/api_keys)
-    private final String API_KEY = "ec300b0837672f3a17c36026f68a0f00";
+    // API Key dùng chung - xem Constants.java
 
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -185,7 +186,7 @@ public class HomeFragment extends Fragment {
         HomeApiService apiService = RetrofitClient.getClient().create(HomeApiService.class);
 
         // Cấu hình các tham số truyền lên: tọa độ, key, hệ metric (độ C), ngôn ngữ tiếng Việt
-        Call<WeatherResponse> call = apiService.getCurrentWeather(lat, lon, API_KEY, "metric", "vi");
+        Call<WeatherResponse> call = apiService.getCurrentWeather(lat, lon, Constants.API_KEY, "metric", "vi");
 
         // Thực hiện xếp hàng gọi ngầm dưới nền (Asynchronous Call) để không gây đơ màn hình app
         call.enqueue(new Callback<WeatherResponse>() {

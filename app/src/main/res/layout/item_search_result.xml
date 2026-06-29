@@ -63,7 +63,7 @@
             android:src="@android:drawable/btn_star_big_off"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Thêm yêu thích"
-            app:tint="#FFB300" />
+            app:tint="#9E9E9E" />
 
     </LinearLayout>
 
