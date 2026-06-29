@@ -11,13 +11,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.example.weatherapp.R;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
 public class SettingsActivity extends AppCompatActivity {
 
     private RadioGroup rgTemperature, rgWindSpeed;
     private RadioButton rbCelsius, rbFahrenheit, rbKmh, rbMph;
-    private SwitchMaterial switchDarkMode, switchNotification;
+    private com.google.android.material.materialswitch.MaterialSwitch switchDarkMode, switchNotification;
     private SharedPreferences sharedPreferences;
 
     public static final String SETTINGS_PREFS = "WeatherSettingsPrefs";
@@ -66,8 +65,10 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         // 4. Lắng nghe chế độ tối
-        switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        switchDarkMode.setOnClickListener(v -> {
+            boolean isChecked = switchDarkMode.isChecked();
             sharedPreferences.edit().putBoolean("is_dark_mode", isChecked).apply();
+
             if (isChecked) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
             } else {
@@ -136,11 +137,24 @@ public class SettingsActivity extends AppCompatActivity {
             rbMph.setChecked(true);
         }
 
-        // Chế độ tối (Mặc định ban đầu vào app là false - Tắt)
-        switchDarkMode.setChecked(sharedPreferences.getBoolean("is_dark_mode", false));
+        // Kiểm tra trực tiếp xem hệ thống đang thực sự ở chế độ tối hay không
+        int currentNightMode = AppCompatDelegate.getDefaultNightMode();
+        boolean isNowDark = (currentNightMode == AppCompatDelegate.MODE_NIGHT_YES);
 
-        // Trạng thái thông báo (Mặc định ban đầu vào app là false - Tắt)
-        //switchNotification.setChecked(sharedPreferences.getBoolean("is_notification_enabled", false));
+        if (currentNightMode == AppCompatDelegate.MODE_NIGHT_UNSPECIFIED) {
+            // Nếu chưa cấu hình gì, kiểm tra theo cấu hình máy điện thoại
+            int sysMode = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+            isNowDark = (sysMode == android.content.res.Configuration.UI_MODE_NIGHT_YES);
+        }
+
+        // Đọc từ bộ nhớ đã lưu, nếu không có thì lấy theo trạng thái đang hiển thị thực tế
+        boolean isDarkModeSaved = sharedPreferences.getBoolean("is_dark_mode", isNowDark);
+
+        // Ép nút Switch hiển thị đúng 100% theo trạng thái thực tế
+        switchDarkMode.setChecked(isDarkModeSaved);
+
+        // Thêm dòng này để xử lý nút thông báo (nếu có lưu)
+        switchNotification.setChecked(sharedPreferences.getBoolean("is_notification_enabled", false));
     }
     @Override
     public boolean onSupportNavigateUp() {

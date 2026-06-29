@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="?attr/colorSurface">
 
     <LinearLayout
         android:id="@+id/btnBack"
@@ -13,7 +14,7 @@
         android:gravity="center_vertical"
         android:clickable="true"
         android:focusable="true"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="?attr/selectableItemBackground"
         android:layout_marginBottom="16dp">
         <ImageView
             android:layout_width="24dp"
@@ -24,7 +25,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=" Quay lại"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="?attr/colorOnSurface"/>
+
     </LinearLayout>
 
     <TextView
@@ -33,7 +36,8 @@
         android:text="Cài đặt ứng dụng"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="24dp"/>
+        android:layout_marginBottom="24dp"
+        android:textColor="?attr/colorOnSurface"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -41,7 +45,8 @@
         android:text="Đơn vị nhiệt độ"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp"
+        android:textColor="?attr/colorOnSurface"/>
 
     <RadioGroup
         android:id="@+id/rgTemperature"
@@ -56,7 +61,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Độ C (°C)"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="?attr/colorOnSurface"/>
 
         <RadioButton
             android:id="@+id/rbFahrenheit"
@@ -64,7 +70,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Độ F (°F)"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="?attr/colorOnSurface"/>
     </RadioGroup>
 
     <TextView
@@ -73,7 +80,8 @@
         android:text="Đơn vị tốc độ gió"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp"
+        android:textColor="?attr/colorOnSurface"/>
 
     <RadioGroup
         android:id="@+id/rgWindSpeed"
@@ -88,7 +96,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Km/h"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="?attr/colorOnSurface"/>
 
         <RadioButton
             android:id="@+id/rbMph"
@@ -96,7 +105,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Mph (Dặm/giờ)"
-            android:textSize="16sp"/>
+            android:textSize="16sp"
+            android:textColor="?attr/colorOnSurface"/>
     </RadioGroup>
 
     <RelativeLayout
@@ -108,8 +118,9 @@
             android:text="Chế độ Tối (Dark Mode)"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_centerVertical="true"/>
-        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:layout_centerVertical="true"
+            android:textColor="?attr/colorOnSurface"/>
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switchDarkMode"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -123,7 +134,8 @@
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"/>
+        android:layout_marginBottom="8dp"
+        android:textColor="?attr/colorOnSurface"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -135,9 +147,10 @@
             android:layout_height="wrap_content"
             android:text="Thông báo thời tiết hàng ngày"
             android:textSize="16sp"
-            android:layout_centerVertical="true"/>
+            android:layout_centerVertical="true"
+            android:textColor="?attr/colorOnSurface"/>
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switchNotification"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
