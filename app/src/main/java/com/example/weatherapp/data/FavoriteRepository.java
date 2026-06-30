@@ -34,6 +34,11 @@ public class FavoriteRepository {
         return deletedRows > 0;
     }
 
+    public boolean deleteFavoriteCity(String cityName, double latitude, double longitude) {
+        int deletedRows = favoriteDbHelper.deleteFavoriteCity(cityName, latitude, longitude);
+        return deletedRows > 0;
+    }
+
     public boolean isFavoriteCity(String cityName, double latitude, double longitude) {
         return favoriteDbHelper.isFavoriteCity(cityName, latitude, longitude);
     }

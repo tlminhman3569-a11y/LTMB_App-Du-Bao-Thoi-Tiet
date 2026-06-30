@@ -53,12 +53,39 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SearchResultItem item = results.get(position);
-        holder.tvCityName.setText(item.getCityName() + ", " + item.getCountry());
-        holder.tvTemperature.setText(String.format("%.0f°C", item.getTemperature()));
+        
+        // 1. Hiển thị tên thành phố (tránh dư dấu phẩy nếu country rỗng)
+        if (item.getCountry() != null && !item.getCountry().isEmpty()) {
+            holder.tvCityName.setText(item.getCityName() + ", " + item.getCountry());
+        } else {
+            holder.tvCityName.setText(item.getCityName());
+        }
+
+        // 2. Hiển thị nhiệt độ (tránh hiển thị NaN và tự động theo cài đặt độ C/độ F)
+        if (Double.isNaN(item.getTemperature())) {
+            holder.tvTemperature.setText("--");
+        } else {
+            if (com.example.weatherapp.utils.WeatherUtils.isCelsius(context)) {
+                holder.tvTemperature.setText(String.format(java.util.Locale.getDefault(), "%.0f°C", item.getTemperature()));
+            } else {
+                int tempF = com.example.weatherapp.utils.WeatherUtils.convertCelsiusToFahrenheit(item.getTemperature());
+                holder.tvTemperature.setText(String.format(java.util.Locale.getDefault(), "%d°F", tempF));
+            }
+        }
+
+        // 3. Hiển thị mô tả thời tiết
         holder.tvWeatherDesc.setText(item.getWeatherDesc());
 
-        String iconUrl = "https://openweathermap.org/img/wn/" + item.getIconCode() + "@2x.png";
-        Glide.with(context).load(iconUrl).into(holder.ivWeatherIcon);
+        // 4. Tải icon thời tiết (nếu rỗng thì dùng icon vị trí mặc định)
+        if (item.getIconCode() != null && !item.getIconCode().isEmpty()) {
+            String iconUrl = "https://openweathermap.org/img/wn/" + item.getIconCode() + "@2x.png";
+            Glide.with(context)
+                    .load(iconUrl)
+                    .placeholder(android.R.drawable.ic_menu_report_image)
+                    .into(holder.ivWeatherIcon);
+        } else {
+            holder.ivWeatherIcon.setImageResource(android.R.drawable.ic_menu_mylocation);
+        }
 
         updateFavoriteIcon(holder, item);
 

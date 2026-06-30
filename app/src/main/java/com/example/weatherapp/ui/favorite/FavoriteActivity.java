@@ -53,6 +53,7 @@ public class FavoriteActivity extends AppCompatActivity {
 
     private void setupRecyclerView() {
         favoriteAdapter = new FavoriteAdapter();
+        favoriteAdapter.setOnFavoriteActionListener(this::deleteFavoriteCity);
 
         rvFavoriteCities.setLayoutManager(new LinearLayoutManager(this));
         rvFavoriteCities.setAdapter(favoriteAdapter);

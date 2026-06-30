@@ -3,6 +3,7 @@ package com.example.weatherapp.ui.favorite;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,7 +17,16 @@ import java.util.List;
 import java.util.Locale;
 
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.FavoriteViewHolder> {
+    public interface OnFavoriteActionListener {
+        void onDeleteClick(int position);
+    }
+
     private final List<FavoriteCity> favoriteCities = new ArrayList<>();
+    private OnFavoriteActionListener actionListener;
+
+    public void setOnFavoriteActionListener(OnFavoriteActionListener actionListener) {
+        this.actionListener = actionListener;
+    }
 
     public void setData(List<FavoriteCity> cities) {
         favoriteCities.clear();
@@ -75,6 +85,15 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
                 city.getLongitude()
         );
         holder.tvFavoriteCityCoords.setText(coordinates);
+
+        holder.imgDeleteHint.setOnClickListener(v -> {
+            if (actionListener != null) {
+                int adapterPosition = holder.getAdapterPosition();
+                if (adapterPosition != RecyclerView.NO_POSITION) {
+                    actionListener.onDeleteClick(adapterPosition);
+                }
+            }
+        });
     }
 
     @Override
@@ -85,11 +104,13 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
     static class FavoriteViewHolder extends RecyclerView.ViewHolder {
         TextView tvFavoriteCityName;
         TextView tvFavoriteCityCoords;
+        ImageView imgDeleteHint;
 
         public FavoriteViewHolder(@NonNull View itemView) {
             super(itemView);
             tvFavoriteCityName = itemView.findViewById(R.id.tvFavoriteCityName);
             tvFavoriteCityCoords = itemView.findViewById(R.id.tvFavoriteCityCoords);
+            imgDeleteHint = itemView.findViewById(R.id.imgDeleteHint);
         }
     }
 }
