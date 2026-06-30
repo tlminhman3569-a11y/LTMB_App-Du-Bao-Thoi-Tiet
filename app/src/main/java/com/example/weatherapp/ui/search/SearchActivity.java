@@ -22,6 +22,7 @@ import com.example.weatherapp.R;
 import com.example.weatherapp.api.RetrofitClient;
 import com.example.weatherapp.api.Constants;
 import com.example.weatherapp.api.SearchApiService;
+import com.example.weatherapp.api.HomeApiService;
 import com.example.weatherapp.models.common.SearchResultItem;
 import com.example.weatherapp.models.common.WeatherResponse;
 import com.example.weatherapp.data.FavoriteRepository;
@@ -277,13 +278,49 @@ public class SearchActivity extends AppCompatActivity {
                     city.getCityName(),
                     "",
                     Double.NaN,
-                    "Địa điểm yêu thích",
+                    "Đang tải...",
                     "",
                     city.getLatitude(),
                     city.getLongitude()
             );
             item.setFavorite(true);
             favoritePinnedList.add(item);
+        }
+        fetchWeatherForPins();
+    }
+
+    private void fetchWeatherForPins() {
+        if (favoritePinnedList.isEmpty()) return;
+        HomeApiService apiService = RetrofitClient.getClient().create(HomeApiService.class);
+        for (int i = 0; i < favoritePinnedList.size(); i++) {
+            final int index = i;
+            SearchResultItem item = favoritePinnedList.get(index);
+            apiService.getCurrentWeather(item.getLatitude(), item.getLongitude(), Constants.API_KEY, "metric", "vi")
+                .enqueue(new Callback<WeatherResponse>() {
+                    @Override
+                    public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            WeatherResponse weather = response.body();
+                            item.setTemperature(weather.getMain().getTemp());
+                            if (weather.getWeather() != null && !weather.getWeather().isEmpty()) {
+                                item.setWeatherDesc(weather.getWeather().get(0).getDescription());
+                                item.setIconCode(weather.getWeather().get(0).getIcon());
+                            }
+                            if (weather.getSys() != null) {
+                                item.setCountry(weather.getSys().getCountry());
+                            }
+                            // Nếu thanh tìm kiếm đang trống, cập nhật dòng này lên UI lập tức
+                            if (etSearchBar.getText().toString().trim().isEmpty()) {
+                                resultAdapter.notifyItemChanged(index);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                        android.util.Log.e("SearchActivity", "Lỗi tải thời tiết cho pin: " + item.getCityName(), t);
+                    }
+                });
         }
     }
 
