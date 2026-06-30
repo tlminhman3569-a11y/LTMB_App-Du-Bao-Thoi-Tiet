@@ -12,6 +12,7 @@ import com.example.weatherapp.R;
 import com.example.weatherapp.ui.forecast.ForecastFragment;
 import com.example.weatherapp.ui.search.SearchActivity;
 import com.example.weatherapp.ui.favorite.FavoriteActivity;
+import com.example.weatherapp.ui.settings.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -67,9 +68,8 @@ public class MainActivity extends AppCompatActivity {
         // Chỗ cho TV5 ghép code SettingsActivity
         btnSettings.setOnClickListener(v -> {
             Toast.makeText(this, "[TV5] Sẽ chuyển sang SettingsActivity", Toast.LENGTH_SHORT).show();
-            // Bỏ comment 2 dòng dưới khi TV5 làm xong
-            // Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-            // startActivity(intent);
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            startActivity(intent);
         });
     }
 }

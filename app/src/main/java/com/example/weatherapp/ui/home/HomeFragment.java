@@ -141,43 +141,77 @@ public class HomeFragment extends Fragment {
         try {
             fusedLocationClient.getLastLocation().addOnSuccessListener(requireActivity(), location -> {
                 if (location != null) {
-                    sharedPreferences.edit()
-                            .putFloat("last_lat", (float) location.getLatitude())
-                            .putFloat("last_lon", (float) location.getLongitude())
-                            .apply();
-
-                    fetchCurrentWeather(location.getLatitude(), location.getLongitude());
-
-                    new Thread(() -> {
-                        android.location.Geocoder geocoder = new android.location.Geocoder(
-                                requireContext(), java.util.Locale.getDefault());
-                        try {
-                            java.util.List<android.location.Address> addresses =
-                                    geocoder.getFromLocation(location.getLatitude(),
-                                            location.getLongitude(), 1);
-                            if (addresses != null && !addresses.isEmpty()) {
-                                String cityName = addresses.get(0).getAdminArea();
-                                if (getActivity() != null) {
-                                    getActivity().runOnUiThread(() -> tvCityName.setText(cityName));
-                                }
-                                sharedPreferences.edit()
-                                        .putString("cached_city_name", cityName)
-                                        .apply();
-                            }
-                        } catch (java.io.IOException e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
-
+                    handleLocationResult(location);
                 } else {
-                    Toast.makeText(getContext(), "Hãy bật GPS trên thiết bị!", Toast.LENGTH_SHORT).show();
-                    if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false); // Tắt loading nếu lỗi
+                    // getLastLocation() trả về null khi hệ thống chưa có vị trí cache sẵn
+                    // (mới khởi động máy/emulator, chưa app nào định vị gần đây...).
+                    // Không có nghĩa là GPS đang tắt -> chủ động yêu cầu 1 fix vị trí mới.
+                    requestFreshLocation();
                 }
             });
         } catch (SecurityException e) {
             e.printStackTrace();
             if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
         }
+    }
+
+    // Chủ động yêu cầu Android lấy 1 vị trí GPS mới thay vì chỉ đọc cache
+    private void requestFreshLocation() {
+        try {
+            com.google.android.gms.tasks.CancellationTokenSource cancellationTokenSource =
+                    new com.google.android.gms.tasks.CancellationTokenSource();
+
+            fusedLocationClient.getCurrentLocation(
+                    com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
+                    cancellationTokenSource.getToken()
+            ).addOnSuccessListener(requireActivity(), location -> {
+                if (location != null) {
+                    handleLocationResult(location);
+                } else {
+                    // Đã cố lấy vị trí mới nhưng vẫn thất bại -> khả năng cao GPS thực sự đang tắt
+                    Toast.makeText(getContext(), "Hãy bật GPS trên thiết bị!", Toast.LENGTH_SHORT).show();
+                    if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+                }
+            }).addOnFailureListener(e -> {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Không lấy được vị trí. Hãy kiểm tra GPS!", Toast.LENGTH_SHORT).show();
+                if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+            });
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(false);
+        }
+    }
+
+    // Xử lý chung khi đã có Location hợp lệ (từ cache hoặc từ fix mới)
+    private void handleLocationResult(android.location.Location location) {
+        sharedPreferences.edit()
+                .putFloat("last_lat", (float) location.getLatitude())
+                .putFloat("last_lon", (float) location.getLongitude())
+                .apply();
+
+        fetchCurrentWeather(location.getLatitude(), location.getLongitude());
+
+        new Thread(() -> {
+            android.location.Geocoder geocoder = new android.location.Geocoder(
+                    requireContext(), java.util.Locale.getDefault());
+            try {
+                java.util.List<android.location.Address> addresses =
+                        geocoder.getFromLocation(location.getLatitude(),
+                                location.getLongitude(), 1);
+                if (addresses != null && !addresses.isEmpty()) {
+                    String cityName = addresses.get(0).getAdminArea();
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> tvCityName.setText(cityName));
+                    }
+                    sharedPreferences.edit()
+                            .putString("cached_city_name", cityName)
+                            .apply();
+                }
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     // Hàm kết nối mạng gọi API thời tiết thực
@@ -211,23 +245,21 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     WeatherResponse weatherData = response.body();
 
-                    // Nếu là thành phố chọn từ Search, ghi đè tên hiển thị + cache đúng tên đó
-                    String cityNameToCache = (cityNameOverride != null)
-                            ? cityNameOverride
-                            : sharedPreferences.getString("cached_city_name", "Không rõ địa điểm");
-
-                    if (cityNameOverride != null && tvCityName != null) {
-                        tvCityName.setText(cityNameOverride);
-                    }
-
-                    // LƯU DỮ LIỆU MỚI VÀO CACHE TRƯỚC KHI HIỂN THỊ
+                    // LƯU DỮ LIỆU THỜI TIẾT VÀO CACHE TRƯỚC KHI HIỂN THỊ
                     Gson gson = new Gson();
                     String jsonToCache = gson.toJson(weatherData);
-                    sharedPreferences.edit()
+                    android.content.SharedPreferences.Editor editor = sharedPreferences.edit()
                             .putString(KEY_WEATHER_JSON, jsonToCache)
-                            .putLong(KEY_CACHE_TIMESTAMP, System.currentTimeMillis())
-                            .putString("cached_city_name", cityNameToCache)
-                            .apply();
+                            .putLong(KEY_CACHE_TIMESTAMP, System.currentTimeMillis());
+
+                    // Chỉ ghi đè tên thành phố vào cache khi đến từ Search (UC3).
+                    // Luồng GPS (cityNameOverride == null) để Geocoder tự ghi key này,
+                    // tránh race condition vì Geocoder chạy ở Thread riêng có thể chưa xong.
+                    if (cityNameOverride != null) {
+                        if (tvCityName != null) tvCityName.setText(cityNameOverride);
+                        editor.putString("cached_city_name", cityNameOverride);
+                    }
+                    editor.apply();
 
                     updateUI(weatherData);
                 } else {
