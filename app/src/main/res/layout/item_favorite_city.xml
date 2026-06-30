@@ -23,7 +23,7 @@
             android:layout_height="32dp"
             android:src="@android:drawable/ic_menu_mylocation"
             android:contentDescription="Vị trí"
-            android:tint="@color/white" />
+            app:tint="@color/white" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -57,7 +57,7 @@
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_delete"
             android:contentDescription="Xóa"
-            android:tint="@color/colorTextSecondary" />
+            app:tint="@color/colorTextSecondary" />
 
     </LinearLayout>
 
