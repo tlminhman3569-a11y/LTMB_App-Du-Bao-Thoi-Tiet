@@ -123,7 +123,12 @@ public class ForecastFragment extends Fragment {
         ForecastApiService apiService = ForecastRetrofitClient.getClient().create(ForecastApiService.class);
 
         String units = "metric";
-        Call<ForecastResponse> call = apiService.getForecast(MOCK_LAT, MOCK_LON, Constants.API_KEY, units, "vi");
+        android.content.SharedPreferences prefs = requireActivity()
+                .getSharedPreferences("WeatherCachePrefs", android.content.Context.MODE_PRIVATE);
+        double lat = prefs.getFloat("last_lat", (float) MOCK_LAT);
+        double lon = prefs.getFloat("last_lon", (float) MOCK_LON);
+
+        Call<ForecastResponse> call = apiService.getForecast(lat, lon, Constants.API_KEY, units, "vi");
 
         call.enqueue(new Callback<ForecastResponse>() {
             @Override
