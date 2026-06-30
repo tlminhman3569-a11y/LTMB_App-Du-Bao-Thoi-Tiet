@@ -30,8 +30,6 @@ public class ForecastFragment extends Fragment {
     private static final double MOCK_LAT = 10.823;
     private static final double MOCK_LON = 106.629;
 
-    // API Key dùng chung - xem Constants.java
-
     private RecyclerView rvHourlyForecast;
     private RecyclerView rvDailyForecast;
     private HourlyForecastAdapter hourlyAdapter;
@@ -119,6 +117,13 @@ public class ForecastFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Reload du bao khi quay ve tu SearchActivity (sau khi chon thanh pho moi)
+        fetchForecast();
+    }
+
     private void fetchForecast() {
         ForecastApiService apiService = ForecastRetrofitClient.getClient().create(ForecastApiService.class);
 
@@ -153,10 +158,6 @@ public class ForecastFragment extends Fragment {
                             }
                         }
                         dailyAdapter.setData(dailyList);
-
-                        // MỚI THÊM: Ép cả 2 adapter vẽ lại giao diện theo cấu hình C/F mới nhất của bạn
-                        hourlyAdapter.notifyDataSetChanged();
-                        dailyAdapter.notifyDataSetChanged();
                     }
                 } else {
                     Toast.makeText(getContext(), "Lỗi dữ liệu dự báo từ API!", Toast.LENGTH_SHORT).show();
@@ -168,18 +169,6 @@ public class ForecastFragment extends Fragment {
                 Toast.makeText(getContext(), "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Mỗi khi người dùng quay lại tab dự báo, ra lệnh cho các danh sách kiểm tra lại WeatherUtils và vẽ lại chữ C/F ngay lập tức
-        if (hourlyAdapter != null) {
-            hourlyAdapter.notifyDataSetChanged();
-        }
-        if (dailyAdapter != null) {
-            dailyAdapter.notifyDataSetChanged();
-        }
     }
 
 //    private boolean isCelsius() {return true;}
