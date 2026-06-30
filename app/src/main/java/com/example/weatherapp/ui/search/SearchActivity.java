@@ -24,6 +24,7 @@ import com.example.weatherapp.api.Constants;
 import com.example.weatherapp.api.SearchApiService;
 import com.example.weatherapp.models.common.SearchResultItem;
 import com.example.weatherapp.models.common.WeatherResponse;
+import com.example.weatherapp.data.FavoriteRepository;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -56,12 +57,14 @@ public class SearchActivity extends AppCompatActivity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
     private Call<WeatherResponse> currentCall;
+    private FavoriteRepository favoriteRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
+        favoriteRepository = new FavoriteRepository(this);
         initViews();
         initAdapters();
         initApiService();
@@ -171,7 +174,10 @@ public class SearchActivity extends AppCompatActivity {
                     String desc    = data.getWeather().get(0).getDescription();
                     String icon    = data.getWeather().get(0).getIcon();
 
-                    SearchResultItem item = new SearchResultItem(name, country, temp, desc, icon);
+                    double lat = data.getCoord() != null ? data.getCoord().getLat() : 0;
+                    double lon = data.getCoord() != null ? data.getCoord().getLon() : 0;
+
+                    SearchResultItem item = new SearchResultItem(name, country, temp, desc, icon, lat, lon);
                     resultList.clear();
                     resultList.add(item);
                     showResultSection();
@@ -265,14 +271,31 @@ public class SearchActivity extends AppCompatActivity {
                 .apply();
     }
 
-    // Placeholder UC4 - TV4 implement sau
+    // Placeholder UC4
     private void saveCityToDatabase(String cityName, String country,
                                     double temperature, String weatherDesc, String iconCode,
                                     boolean isFavorite) {
+        SearchResultItem item = resultList.isEmpty() ? null : resultList.get(0);
+
+        if (item == null) {
+            Toast.makeText(this, "Không có dữ liệu thành phố để lưu", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (isFavorite) {
-            Toast.makeText(this, "Đã bấm thích! ❤️ " + cityName, Toast.LENGTH_SHORT).show();
+            boolean added = favoriteRepository.addFavoriteCity(
+                    item.getCityName(),
+                    item.getLatitude(),
+                    item.getLongitude()
+            );
+
+            if (added) {
+                Toast.makeText(this, "Đã thêm vào yêu thích: " + item.getCityName(), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Địa điểm đã có trong yêu thích", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(this, "Đã bỏ thích " + cityName, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Đã bỏ thích " + item.getCityName(), Toast.LENGTH_SHORT).show();
         }
     }
 
