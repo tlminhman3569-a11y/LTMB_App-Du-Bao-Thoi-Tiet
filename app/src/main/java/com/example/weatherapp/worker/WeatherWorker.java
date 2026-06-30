@@ -15,6 +15,7 @@ import androidx.work.WorkerParameters;
 import com.example.weatherapp.api.HomeApiService;
 import com.example.weatherapp.models.common.WeatherResponse;
 import com.example.weatherapp.ui.home.MainActivity;
+import com.example.weatherapp.utils.AppConfig;
 import com.example.weatherapp.utils.WeatherUtils;
 
 import retrofit2.Response;
