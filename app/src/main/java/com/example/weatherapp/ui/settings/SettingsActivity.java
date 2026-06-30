@@ -6,12 +6,19 @@ import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.example.weatherapp.R;
 import com.example.weatherapp.utils.WeatherUtils;
+import com.example.weatherapp.worker.WeatherWorker;
+
+import java.util.concurrent.TimeUnit;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -76,50 +83,60 @@ public class SettingsActivity extends AppCompatActivity {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
             }
         });
-//        // 5. LẮNG NGHE SỰ KIỆN BẬT/TẮT THÔNG BÁO CHẠY NGẦM
-//        switchNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
-//            // Lưu trạng thái lựa chọn của người dùng vào máy
-//            sharedPreferences.edit().putBoolean("is_notification_enabled", isChecked).apply();
-//
-//            if (isChecked) {
-//                // 1. TÍNH TOÁN THỜI GIAN CHỜ ĐỂ BẮN THÔNG BÁO VÀO ĐÚNG 7 GIỜ SÁNG
-//                java.util.Calendar currentDate = java.util.Calendar.getInstance();
-//                java.util.Calendar dueDate = java.util.Calendar.getInstance();
-//
-//                // Thiết lập khung giờ vàng bạn muốn: 7 giờ 00 phút 0 giây sáng
-//                //Có thể chỉnh sửa khung giờ để Test
-//                dueDate.set(java.util.Calendar.HOUR_OF_DAY, 7);
-//                dueDate.set(java.util.Calendar.MINUTE, 0);
-//                dueDate.set(java.util.Calendar.SECOND, 0);
-//
-//                // Nếu thời điểm hiện tại đã qua 7 giờ sáng rồi, thì phải hẹn vào 7 giờ sáng NGÀY MAI
-//                if (dueDate.before(currentDate)) {
-//                    dueDate.add(java.util.Calendar.HOUR_OF_DAY, 24);
-//                }
-//
-//                // Tính số mili-giây chênh lệch cần phải chờ (Delay)
-//                long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();
-//
-//                // 2. THIẾT LẬP LỊCH CHẠY ĐỊNH KỲ MỖI 24 TIẾNG (MỖI NGÀY 1 LẦN)
-//                PeriodicWorkRequest weatherWorkRequest =
-//                        new PeriodicWorkRequest.Builder(WeatherWorker.class, 24, TimeUnit.HOURS)
-//                                .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS) // Ép chờ đến đúng 7:00 sáng mới chạy
+
+        // 5. LẮNG NGHE SỰ KIỆN BẬT/TẮT THÔNG BÁO CHẠY NGẦM
+        switchNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // Lưu trạng thái lựa chọn của người dùng vào máy
+            sharedPreferences.edit().putBoolean("is_notification_enabled", isChecked).apply();
+
+            if (isChecked) {
+                // 1. TÍNH TOÁN THỜI GIAN CHỜ ĐỂ BẮN THÔNG BÁO VÀO ĐÚNG 7 GIỜ SÁNG
+                java.util.Calendar currentDate = java.util.Calendar.getInstance();
+                java.util.Calendar dueDate = java.util.Calendar.getInstance();
+
+                // Thiết lập khung giờ vàng bạn muốn: 7 giờ 00 phút 0 giây sáng
+                //Có thể chỉnh sửa khung giờ để Test
+                dueDate.set(java.util.Calendar.HOUR_OF_DAY, 7);
+                dueDate.set(java.util.Calendar.MINUTE, 0);
+                dueDate.set(java.util.Calendar.SECOND, 0);
+
+                // Nếu thời điểm hiện tại đã qua 7 giờ sáng rồi, thì phải hẹn vào 7 giờ sáng NGÀY MAI
+                if (dueDate.before(currentDate)) {
+                    dueDate.add(java.util.Calendar.HOUR_OF_DAY, 24);
+                }
+
+                // Tính số mili-giây chênh lệch cần phải chờ (Delay)
+                long timeDiff = dueDate.getTimeInMillis() - currentDate.getTimeInMillis();
+
+                androidx.work.Constraints constraints = new androidx.work.Constraints.Builder()
+                        .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED) // Chỉ chạy khi có mạng
+                        .build();
+                // 2. THIẾT LẬP LỊCH CHẠY ĐỊNH KỲ MỖI 24 TIẾNG (MỖI NGÀY 1 LẦN)
+                PeriodicWorkRequest weatherWorkRequest =
+                        new PeriodicWorkRequest.Builder(WeatherWorker.class, 24, TimeUnit.HOURS)
+                                .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS) // Ép chờ đến đúng 7:00 sáng mới chạy
+                                .setConstraints(constraints)
+                                .build();
+
+                // Đăng ký vào hệ thống
+                WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                        "WeatherPeriodicCheck",
+                        ExistingPeriodicWorkPolicy.UPDATE,
+                        weatherWorkRequest
+                );
+                //dùng để test: Bật là thông báo ngay
+//                androidx.work.OneTimeWorkRequest instantRequest =
+//                        new androidx.work.OneTimeWorkRequest.Builder(WeatherWorker.class)
 //                                .build();
-//
-//                // Đăng ký vào hệ thống
-//                WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-//                        "WeatherPeriodicCheck",
-//                        ExistingPeriodicWorkPolicy.REPLACE, // Dùng REPLACE để cập nhật lại mốc thời gian chờ mới nếu họ tắt đi bật lại
-//                        weatherWorkRequest
-//                );
-//
-//                Toast.makeText(this, "Đã hẹn lịch thông báo vào 7:00 sáng hàng ngày!", Toast.LENGTH_SHORT).show();
-//            } else {
-//                // Người dùng TẮT -> Hủy toàn bộ lịch chạy
-//                WorkManager.getInstance(this).cancelUniqueWork("WeatherPeriodicCheck");
-//                Toast.makeText(this, "Đã tắt thông báo thời tiết!", Toast.LENGTH_SHORT).show();
-//            }
-//        });
+//                WorkManager.getInstance(this).enqueue(instantRequest);
+
+                Toast.makeText(this, "Đã hẹn lịch thông báo vào 7:00 sáng hàng ngày!", Toast.LENGTH_SHORT).show();
+            } else {
+                // Người dùng TẮT -> Hủy toàn bộ lịch chạy
+                WorkManager.getInstance(this).cancelUniqueWork("WeatherPeriodicCheck");
+                Toast.makeText(this, "Đã tắt thông báo thời tiết!", Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
@@ -154,7 +171,7 @@ public class SettingsActivity extends AppCompatActivity {
         // Ép nút Switch hiển thị đúng 100% theo trạng thái thực tế
         switchDarkMode.setChecked(isDarkModeSaved);
 
-        // Thêm dòng này để xử lý nút thông báo (nếu có lưu)
+        // Xử lý nút thông báo
         switchNotification.setChecked(sharedPreferences.getBoolean("is_notification_enabled", false));
     }
     @Override

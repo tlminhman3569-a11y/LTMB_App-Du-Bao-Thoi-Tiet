@@ -186,7 +186,14 @@ public class HomeFragment extends Fragment {
 
     // Xử lý chung khi đã có Location hợp lệ (từ cache hoặc từ fix mới)
     private void handleLocationResult(android.location.Location location) {
-        sharedPreferences.edit()
+//        sharedPreferences.edit()
+//                .putFloat("last_lat", (float) location.getLatitude())
+//                .putFloat("last_lon", (float) location.getLongitude())
+//                .apply();
+        android.content.SharedPreferences cachePrefs =
+                requireActivity().getSharedPreferences("WeatherCachePrefs", android.content.Context.MODE_PRIVATE);
+
+        cachePrefs.edit()
                 .putFloat("last_lat", (float) location.getLatitude())
                 .putFloat("last_lon", (float) location.getLongitude())
                 .apply();
