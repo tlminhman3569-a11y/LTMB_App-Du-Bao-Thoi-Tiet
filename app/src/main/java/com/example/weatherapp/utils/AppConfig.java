@@ -11,8 +11,8 @@ public class AppConfig {
     public static final float DEFAULT_LON = 106.6601f;
 
     //Khung giờ gửi thông báo thời tiết đến người dùng
-    public static final int NOTIFICATION_HOUR = 20;
-    public static final int NOTIFICATION_MINUTE = 33;
+    public static final int NOTIFICATION_HOUR = 7;
+    public static final int NOTIFICATION_MINUTE = 0;
     public static final int NOTIFICATION_SECOND = 0;
 
     public static final String WORK_NAME_PERIODIC = "WeatherPeriodicCheck";
