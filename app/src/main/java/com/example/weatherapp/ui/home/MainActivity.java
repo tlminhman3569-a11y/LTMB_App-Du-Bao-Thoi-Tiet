@@ -34,6 +34,23 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+    // Bộ phóng nhận lại kết quả từ FavoriteActivity khi người dùng chọn 1 thành phố yêu thích
+    private final ActivityResultLauncher<Intent> favoriteLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+                    String cityName = data.getStringExtra("city_name");
+                    double lat = data.getDoubleExtra("city_lat", 0);
+                    double lon = data.getDoubleExtra("city_lon", 0);
+
+                    Fragment fragment = getSupportFragmentManager()
+                            .findFragmentById(R.id.container_current_weather);
+                    if (fragment instanceof HomeFragment) {
+                        ((HomeFragment) fragment).loadCityWeather(lat, lon, cityName);
+                    }
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         // Chỗ cho TV4 ghép code FavoriteActivity
         btnFavorite.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, FavoriteActivity.class);
-            startActivity(intent);
+            favoriteLauncher.launch(intent);
         });
 
         // Chỗ cho TV5 ghép code SettingsActivity
