@@ -298,8 +298,8 @@ public class HomeFragment extends Fragment {
 //            tvTemperature.setText(tempInFahrenheit + "°F");
 //        }
 //
-//        // Đổ độ ẩm
-//        tvHumidity.setText(data.getMain().getHumidity() + "%");
+        // Đổ độ ẩm
+        tvHumidity.setText(data.getMain().getHumidity() + "%");
 //
 //        // Đổ tốc độ gió
 //        //tvWindSpeed.setText(data.getWind().getSpeed() + (isKmH() ? " km/h" : " mph"));
