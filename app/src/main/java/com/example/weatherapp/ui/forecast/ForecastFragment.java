@@ -124,7 +124,7 @@ public class ForecastFragment extends Fragment {
         fetchForecast();
     }
 
-    private void fetchForecast() {
+    public void fetchForecast() {
         ForecastApiService apiService = ForecastRetrofitClient.getClient().create(ForecastApiService.class);
 
         String units = "metric";

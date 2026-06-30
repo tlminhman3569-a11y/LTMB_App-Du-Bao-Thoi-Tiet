@@ -27,6 +27,7 @@ import com.example.weatherapp.utils.WeatherUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
+import com.example.weatherapp.ui.forecast.ForecastFragment;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -223,6 +224,15 @@ public class HomeFragment extends Fragment {
     public void loadCityWeather(double lat, double lon, String cityName) {
         if (tvCityName != null) tvCityName.setText(cityName);
         if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(true);
+
+        // Lưu lại tọa độ mới vào SharedPreferences để UC2 (Forecast) đồng bộ theo
+        if (sharedPreferences != null) {
+            sharedPreferences.edit()
+                    .putFloat("last_lat", (float) lat)
+                    .putFloat("last_lon", (float) lon)
+                    .apply();
+        }
+
         fetchCurrentWeather(lat, lon, cityName);
     }
 
@@ -262,6 +272,16 @@ public class HomeFragment extends Fragment {
                     editor.apply();
 
                     updateUI(weatherData);
+
+                    // Kích hoạt ForecastFragment cập nhật lại dự báo theo tọa độ mới
+                    if (getActivity() != null) {
+                        androidx.fragment.app.Fragment forecastFrag = getActivity()
+                                .getSupportFragmentManager()
+                                .findFragmentById(R.id.container_forecast);
+                        if (forecastFrag instanceof ForecastFragment) {
+                            ((ForecastFragment) forecastFrag).fetchForecast();
+                        }
+                    }
                 } else {
                     Toast.makeText(getContext(), "Lỗi dữ liệu từ máy chủ API!", Toast.LENGTH_SHORT).show();
                 }
