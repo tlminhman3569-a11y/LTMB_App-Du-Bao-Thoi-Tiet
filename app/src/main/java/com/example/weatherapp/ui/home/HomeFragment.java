@@ -182,6 +182,17 @@ public class HomeFragment extends Fragment {
 
     // Hàm kết nối mạng gọi API thời tiết thực
     private void fetchCurrentWeather(double lat, double lon) {
+        fetchCurrentWeather(lat, lon, null);
+    }
+
+    // UC3: Được gọi từ MainActivity khi người dùng chọn 1 thành phố ở màn hình Tìm kiếm
+    public void loadCityWeather(double lat, double lon, String cityName) {
+        if (tvCityName != null) tvCityName.setText(cityName);
+        if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(true);
+        fetchCurrentWeather(lat, lon, cityName);
+    }
+
+    private void fetchCurrentWeather(double lat, double lon, String cityNameOverride) {
         // Tạo đường ống kết nối từ máy bơm chung RetrofitClient
         HomeApiService apiService = RetrofitClient.getClient().create(HomeApiService.class);
 
@@ -200,12 +211,22 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     WeatherResponse weatherData = response.body();
 
+                    // Nếu là thành phố chọn từ Search, ghi đè tên hiển thị + cache đúng tên đó
+                    String cityNameToCache = (cityNameOverride != null)
+                            ? cityNameOverride
+                            : sharedPreferences.getString("cached_city_name", "Không rõ địa điểm");
+
+                    if (cityNameOverride != null && tvCityName != null) {
+                        tvCityName.setText(cityNameOverride);
+                    }
+
                     // LƯU DỮ LIỆU MỚI VÀO CACHE TRƯỚC KHI HIỂN THỊ
                     Gson gson = new Gson();
                     String jsonToCache = gson.toJson(weatherData);
                     sharedPreferences.edit()
                             .putString(KEY_WEATHER_JSON, jsonToCache)
                             .putLong(KEY_CACHE_TIMESTAMP, System.currentTimeMillis())
+                            .putString("cached_city_name", cityNameToCache)
                             .apply();
 
                     updateUI(weatherData);
