@@ -46,19 +46,34 @@
                 android:layout_marginEnd="18dp"
                 android:src="@android:drawable/ic_menu_search"
                 android:contentDescription="Tìm kiếm"
-                app:tint="@color/white" /> <ImageView
-            android:id="@+id/btnFavorite"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginEnd="18dp"
-            android:src="@android:drawable/ic_menu_myplaces"
-            android:contentDescription="Yêu thích"
-            app:tint="@color/white" /> <ImageView
-            android:id="@+id/btnSettings"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:src="@android:drawable/ic_menu_preferences"
-            android:contentDescription="Cài đặt"
-            app:tint="@color/white" /> </LinearLayout>
+                app:tint="@color/white" />
+
+            <ImageView
+                android:id="@+id/btnFavorite"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="18dp"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:contentDescription="Yêu thích"
+                app:tint="@color/white" />
+
+            <ImageView
+                android:id="@+id/btnCloudSync"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="18dp"
+                android:src="@android:drawable/ic_popup_sync"
+                android:contentDescription="Đồng bộ Cloud"
+                app:tint="@color/white" />
+
+            <ImageView
+                android:id="@+id/btnSettings"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@android:drawable/ic_menu_preferences"
+                android:contentDescription="Cài đặt"
+                app:tint="@color/white" />
+
+        </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>

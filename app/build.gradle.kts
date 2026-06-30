@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -55,4 +56,25 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.2.0")
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    // Google firebase
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
+
+    // Thư viện Đăng nhập Firebase
+    implementation("com.google.firebase:firebase-auth")
+
+    // Thư viện Đăng nhập Google (Bung popup)
+    implementation("com.google.android.gms:play-services-auth:21.6.0")
+
+    // Thư viện Cơ sở dữ liệu mây (Realtime Database)
+    implementation("com.google.firebase:firebase-database")
+
+    // TODO: Add the dependencies for Firebase products you want to use
+    // When using the BoM, don't specify versions in Firebase dependencies
+    implementation("com.google.firebase:firebase-analytics")
+
+
+    // Add the dependencies for any other desired Firebase products
+    // https://firebase.google.com/docs/android/setup#available-libraries
 }

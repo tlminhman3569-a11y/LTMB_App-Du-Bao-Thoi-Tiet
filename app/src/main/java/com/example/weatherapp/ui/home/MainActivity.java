@@ -84,9 +84,19 @@ public class MainActivity extends AppCompatActivity {
 
         // Chỗ cho TV5 ghép code SettingsActivity
         btnSettings.setOnClickListener(v -> {
-            Toast.makeText(this, "[TV5] Sẽ chuyển sang SettingsActivity", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "chuyển sang SettingsActivity", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
         });
+
+        // TranLeMinhMan nút đồng bộ clound
+        ImageView btnCloudSync = findViewById(R.id.btnCloudSync);
+        if (btnCloudSync != null) {
+            btnCloudSync.setOnClickListener(v -> {
+                com.example.weatherapp.utils.FirebaseSyncManager syncManager =
+                        new com.example.weatherapp.utils.FirebaseSyncManager(MainActivity.this);
+                syncManager.syncData();
+            });
+        }
     }
 }

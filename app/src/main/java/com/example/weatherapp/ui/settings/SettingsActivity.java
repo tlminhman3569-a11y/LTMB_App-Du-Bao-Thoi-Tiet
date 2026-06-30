@@ -18,6 +18,23 @@ import com.example.weatherapp.R;
 import com.example.weatherapp.utils.WeatherUtils;
 import com.example.weatherapp.worker.WeatherWorker;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+
+import android.content.Intent;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.TextView;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import java.util.concurrent.TimeUnit;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -28,6 +45,12 @@ public class SettingsActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
 
     public static final String SETTINGS_PREFS = "WeatherSettingsPrefs";
+
+    // TranLeMinhMan_Bien cho google singin và UI
+    private TextView tvUserInfo;
+    private Button btnGoogleLogin;
+    private FirebaseAuth mAuth;
+    private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +161,30 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // TranLeMinhMan: Logic khởi tạo và click đăng nhập google
+        tvUserInfo = findViewById(R.id.tvUserInfo);
+        btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
+
+        mAuth = FirebaseAuth.getInstance();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        updateUI(mAuth.getCurrentUser());
+
+        btnGoogleLogin.setOnClickListener(v -> {
+            if (mAuth.getCurrentUser() != null) {
+                mAuth.signOut();
+                mGoogleSignInClient.signOut();
+                updateUI(null);
+                Toast.makeText(this, "Đã đăng xuất Cloud", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                googleSignInLauncher.launch(signInIntent);
+            }
+        });
     }
 
     private void setupCurrentSettingsView() {
@@ -178,5 +225,49 @@ public class SettingsActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         onBackPressed();
         return true;
+    }
+
+    // TranLeMinhMan: Các hàm xử lý kết quả đăng nhập google và UI
+    private final ActivityResultLauncher<Intent> googleSignInLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                    try {
+                        GoogleSignInAccount account = task.getResult(ApiException.class);
+                        firebaseAuthWithGoogle(account.getIdToken());
+                    } catch (ApiException e) {
+                        Log.e("Auth", "Google sign in failed", e);
+                        Toast.makeText(this, "Đăng nhập Google thất bại!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+    );
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        updateUI(user);
+                        Toast.makeText(SettingsActivity.this, "Kết nối Cloud thành công!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(SettingsActivity.this, "Lỗi kết nối Firebase", Toast.LENGTH_SHORT).show();
+                        updateUI(null);
+                    }
+                });
+    }
+
+    private void updateUI(FirebaseUser user) {
+        if (user != null) {
+            tvUserInfo.setText("Tài khoản: " + user.getEmail());
+            btnGoogleLogin.setText("Đăng xuất");
+            btnGoogleLogin.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_red_light, null));
+        } else {
+            tvUserInfo.setText("Bạn chưa đăng nhập");
+            btnGoogleLogin.setText("Đăng nhập bằng Google");
+            btnGoogleLogin.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimary, null));
+        }
     }
 }
