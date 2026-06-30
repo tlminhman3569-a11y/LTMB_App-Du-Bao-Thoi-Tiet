@@ -88,5 +88,15 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
             startActivity(intent);
         });
+
+        // TranLeMinhMan nút đồng bộ clound
+        ImageView btnCloudSync = findViewById(R.id.btnCloudSync);
+        if (btnCloudSync != null) {
+            btnCloudSync.setOnClickListener(v -> {
+                com.example.weatherapp.utils.FirebaseSyncManager syncManager =
+                        new com.example.weatherapp.utils.FirebaseSyncManager(MainActivity.this);
+                syncManager.syncData();
+            });
+        }
     }
 }
