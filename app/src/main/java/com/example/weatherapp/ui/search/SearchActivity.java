@@ -99,6 +99,12 @@ public class SearchActivity extends AppCompatActivity {
                 saveToHistory(item.getCityName());
                 Toast.makeText(SearchActivity.this,
                         "Đã chọn: " + item.getCityName(), Toast.LENGTH_SHORT).show();
+
+                android.content.Intent resultIntent = new android.content.Intent();
+                resultIntent.putExtra("city_name", item.getCityName());
+                resultIntent.putExtra("city_lat", item.getLatitude());
+                resultIntent.putExtra("city_lon", item.getLongitude());
+                setResult(RESULT_OK, resultIntent);
                 finish();
             }
 
