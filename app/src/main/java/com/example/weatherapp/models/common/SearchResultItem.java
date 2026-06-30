@@ -31,4 +31,9 @@ public class SearchResultItem {
     public void setFavorite(boolean favorite) { isFavorite = favorite; }
     public double getLatitude() { return latitude; }
     public double getLongitude() { return longitude; }
+
+    public void setCountry(String country) { this.country = country; }
+    public void setTemperature(double temperature) { this.temperature = temperature; }
+    public void setWeatherDesc(String weatherDesc) { this.weatherDesc = weatherDesc; }
+    public void setIconCode(String iconCode) { this.iconCode = iconCode; }
 }

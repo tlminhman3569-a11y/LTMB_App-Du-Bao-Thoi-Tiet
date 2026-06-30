@@ -22,9 +22,11 @@ import com.example.weatherapp.R;
 import com.example.weatherapp.api.RetrofitClient;
 import com.example.weatherapp.api.Constants;
 import com.example.weatherapp.api.SearchApiService;
+import com.example.weatherapp.api.HomeApiService;
 import com.example.weatherapp.models.common.SearchResultItem;
 import com.example.weatherapp.models.common.WeatherResponse;
 import com.example.weatherapp.data.FavoriteRepository;
+import com.example.weatherapp.models.favorite.FavoriteCity;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -51,6 +53,7 @@ public class SearchActivity extends AppCompatActivity {
     private SearchResultAdapter resultAdapter;
     private HistoryAdapter historyAdapter;
     private List<SearchResultItem> resultList = new ArrayList<>();
+    private List<SearchResultItem> favoritePinnedList = new ArrayList<>();
     private List<String> historyList = new ArrayList<>();
 
     private SearchApiService searchApiService;
@@ -69,8 +72,20 @@ public class SearchActivity extends AppCompatActivity {
         initAdapters();
         initApiService();
         loadHistory();
+        loadFavoritePins();
         setupListeners();
         showHistorySection();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (favoriteRepository != null) {
+            loadFavoritePins();
+            if (etSearchBar != null && etSearchBar.getText().toString().trim().isEmpty()) {
+                showHistorySection();
+            }
+        }
     }
 
     private void initViews() {
@@ -110,9 +125,7 @@ public class SearchActivity extends AppCompatActivity {
 
             @Override
             public void onFavoriteClick(SearchResultItem item) {
-                saveCityToDatabase(item.getCityName(), item.getCountry(),
-                        item.getTemperature(), item.getWeatherDesc(), item.getIconCode(),
-                        item.isFavorite());
+                saveCityToDatabase(item);
             }
         });
 
@@ -184,6 +197,7 @@ public class SearchActivity extends AppCompatActivity {
                     double lon = data.getCoord() != null ? data.getCoord().getLon() : 0;
 
                     SearchResultItem item = new SearchResultItem(name, country, temp, desc, icon, lat, lon);
+                    item.setFavorite(favoriteRepository.isFavoriteCity(name, lat, lon));
                     resultList.clear();
                     resultList.add(item);
                     showResultSection();
@@ -228,10 +242,14 @@ public class SearchActivity extends AppCompatActivity {
 
     private void showHistorySection() {
         progressBar.setVisibility(View.GONE);
-        rvSearchResults.setVisibility(View.GONE);
         tvNoResult.setVisibility(View.GONE);
+        boolean hasFavorites = !favoritePinnedList.isEmpty();
         boolean hasHistory = !historyList.isEmpty();
-        tvHistoryLabel.setVisibility(hasHistory ? View.VISIBLE : View.GONE);
+
+        resultAdapter.updateData(favoritePinnedList);
+        rvSearchResults.setVisibility(hasFavorites ? View.VISIBLE : View.GONE);
+        tvHistoryLabel.setText(hasFavorites ? "Địa điểm yêu thích" : "Tìm kiếm gần đây");
+        tvHistoryLabel.setVisibility((hasFavorites || hasHistory) ? View.VISIBLE : View.GONE);
         rvHistory.setVisibility(hasHistory ? View.VISIBLE : View.GONE);
     }
 
@@ -249,6 +267,61 @@ public class SearchActivity extends AppCompatActivity {
         historyList.clear();
         historyList.addAll(saved);
         historyAdapter.updateData(historyList);
+    }
+
+    private void loadFavoritePins() {
+        List<FavoriteCity> favoriteCities = favoriteRepository.getAllFavoriteCities();
+        favoritePinnedList.clear();
+
+        for (FavoriteCity city : favoriteCities) {
+            SearchResultItem item = new SearchResultItem(
+                    city.getCityName(),
+                    "",
+                    Double.NaN,
+                    "Đang tải...",
+                    "",
+                    city.getLatitude(),
+                    city.getLongitude()
+            );
+            item.setFavorite(true);
+            favoritePinnedList.add(item);
+        }
+        fetchWeatherForPins();
+    }
+
+    private void fetchWeatherForPins() {
+        if (favoritePinnedList.isEmpty()) return;
+        HomeApiService apiService = RetrofitClient.getClient().create(HomeApiService.class);
+        for (int i = 0; i < favoritePinnedList.size(); i++) {
+            final int index = i;
+            SearchResultItem item = favoritePinnedList.get(index);
+            apiService.getCurrentWeather(item.getLatitude(), item.getLongitude(), Constants.API_KEY, "metric", "vi")
+                .enqueue(new Callback<WeatherResponse>() {
+                    @Override
+                    public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            WeatherResponse weather = response.body();
+                            item.setTemperature(weather.getMain().getTemp());
+                            if (weather.getWeather() != null && !weather.getWeather().isEmpty()) {
+                                item.setWeatherDesc(weather.getWeather().get(0).getDescription());
+                                item.setIconCode(weather.getWeather().get(0).getIcon());
+                            }
+                            if (weather.getSys() != null) {
+                                item.setCountry(weather.getSys().getCountry());
+                            }
+                            // Nếu thanh tìm kiếm đang trống, cập nhật dòng này lên UI lập tức
+                            if (etSearchBar.getText().toString().trim().isEmpty()) {
+                                resultAdapter.notifyItemChanged(index);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                        android.util.Log.e("SearchActivity", "Lỗi tải thời tiết cho pin: " + item.getCityName(), t);
+                    }
+                });
+        }
     }
 
     private void saveToHistory(String cityName) {
@@ -277,18 +350,13 @@ public class SearchActivity extends AppCompatActivity {
                 .apply();
     }
 
-    // Placeholder UC4
-    private void saveCityToDatabase(String cityName, String country,
-                                    double temperature, String weatherDesc, String iconCode,
-                                    boolean isFavorite) {
-        SearchResultItem item = resultList.isEmpty() ? null : resultList.get(0);
-
+    private void saveCityToDatabase(SearchResultItem item) {
         if (item == null) {
             Toast.makeText(this, "Không có dữ liệu thành phố để lưu", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        if (isFavorite) {
+        if (item.isFavorite()) {
             boolean added = favoriteRepository.addFavoriteCity(
                     item.getCityName(),
                     item.getLatitude(),
@@ -301,7 +369,25 @@ public class SearchActivity extends AppCompatActivity {
                 Toast.makeText(this, "Địa điểm đã có trong yêu thích", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(this, "Đã bỏ thích " + item.getCityName(), Toast.LENGTH_SHORT).show();
+            boolean deleted = favoriteRepository.deleteFavoriteCity(
+                    item.getCityName(),
+                    item.getLatitude(),
+                    item.getLongitude()
+            );
+
+            if (deleted) {
+                Toast.makeText(this, "Đã bỏ thích " + item.getCityName(), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Địa điểm chưa có trong yêu thích", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        // Cập nhật lại danh sách ghim từ DB trước
+        loadFavoritePins();
+
+        // Nếu thanh tìm kiếm rỗng, làm mới giao diện ghim ngay lập tức
+        if (etSearchBar.getText().toString().trim().isEmpty()) {
+            showHistorySection();
         }
     }
 

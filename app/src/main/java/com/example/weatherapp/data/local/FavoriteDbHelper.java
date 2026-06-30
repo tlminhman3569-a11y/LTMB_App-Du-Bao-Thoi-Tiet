@@ -104,6 +104,16 @@ public class FavoriteDbHelper extends SQLiteOpenHelper {
         );
     }
 
+    public int deleteFavoriteCity(String cityName, double latitude, double longitude) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        return db.delete(
+                TABLE_FAVORITE_CITIES,
+                COLUMN_CITY_NAME + " = ? AND " + COLUMN_LATITUDE + " = ? AND " + COLUMN_LONGITUDE + " = ?",
+                new String[]{cityName, String.valueOf(latitude), String.valueOf(longitude)}
+        );
+    }
+
     public boolean isFavoriteCity(String cityName, double latitude, double longitude) {
         SQLiteDatabase db = getReadableDatabase();
 

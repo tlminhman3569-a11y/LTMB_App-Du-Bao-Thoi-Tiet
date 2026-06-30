@@ -50,4 +50,21 @@ public class FavoriteCity {
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
+
+    private String country;
+    private double temperature = Double.NaN;
+    private String description;
+    private String iconCode;
+
+    public String getCountry() { return country; }
+    public void setCountry(String country) { this.country = country; }
+
+    public double getTemperature() { return temperature; }
+    public void setTemperature(double temperature) { this.temperature = temperature; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getIconCode() { return iconCode; }
+    public void setIconCode(String iconCode) { this.iconCode = iconCode; }
 }

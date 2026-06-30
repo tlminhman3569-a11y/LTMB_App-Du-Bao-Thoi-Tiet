@@ -19,11 +19,9 @@
 
         <ImageView
             android:id="@+id/imgLocationIcon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_mylocation"
-            android:contentDescription="Vị trí"
-            android:tint="@color/white" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="Icon thời tiết" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -34,22 +32,30 @@
 
             <TextView
                 android:id="@+id/tvFavoriteCityName"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thành phố"
                 android:textColor="@color/colorTextPrimary"
                 android:textSize="@dimen/text_size_subtitle"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvFavoriteCityCoords"
-                android:layout_width="match_parent"
+                android:id="@+id/tvFavoriteWeatherDesc"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Lat: --, Lon: --"
+                android:text="Đang tải..."
                 android:textColor="@color/colorTextSecondary"
                 android:textSize="@dimen/text_size_body" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvFavoriteTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorTextPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="12dp" />
 
         <ImageView
             android:id="@+id/imgDeleteHint"
@@ -57,7 +63,7 @@
             android:layout_height="24dp"
             android:src="@android:drawable/ic_menu_delete"
             android:contentDescription="Xóa"
-            android:tint="@color/colorTextSecondary" />
+            app:tint="@color/colorTextSecondary" />
 
     </LinearLayout>
 
