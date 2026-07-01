@@ -185,6 +185,41 @@ public class SettingsActivity extends AppCompatActivity {
                 googleSignInLauncher.launch(signInIntent);
             }
         });
+
+        // Nút xóa dữ liệu trên FireBase
+        // 1. Ánh xạ nút từ giao diện
+        Button btnXoaCloud = findViewById(R.id.btnXoaCloud);
+
+        // 2. Gắn sự kiện khi bấm nút
+        btnXoaCloud.setOnClickListener(v -> {
+
+            // Hiện bảng cảnh báo
+            new androidx.appcompat.app.AlertDialog.Builder(v.getContext())
+                    .setTitle("Xác nhận xóa")
+                    .setMessage("Bạn có chắc chắn muốn xóa toàn bộ danh sách yêu thích đã sao lưu trên Đám mây không?")
+                    .setPositiveButton("Xóa sạch", (dialog, which) -> {
+
+                        // Xóa trực tiếp trên Firebase
+                        String userId = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                        com.google.firebase.database.FirebaseDatabase.getInstance("https://weatherapp-deb84-default-rtdb.asia-southeast1.firebasedatabase.app")
+                                .getReference()
+                                .child("Users")
+                                .child(userId)
+                                .child("Favorites")
+                                .removeValue()
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        android.widget.Toast.makeText(v.getContext(), "Đã xóa sạch sao lưu trên Cloud!", android.widget.Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        android.widget.Toast.makeText(v.getContext(), "Lỗi khi xóa dữ liệu!", android.widget.Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                    })
+                    .setNegativeButton("Hủy bỏ", null) // Bấm hủy thì đóng bảng
+                    .show();
+        });
     }
 
     private void setupCurrentSettingsView() {
@@ -270,4 +305,5 @@ public class SettingsActivity extends AppCompatActivity {
             btnGoogleLogin.setBackgroundTintList(getResources().getColorStateList(R.color.colorPrimary, null));
         }
     }
+
 }
