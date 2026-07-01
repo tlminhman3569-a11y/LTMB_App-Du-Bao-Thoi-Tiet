@@ -349,7 +349,7 @@ public class HomeFragment extends Fragment {
             tvTemperature.setText(tempInFahrenheit + "°F");
         }
 
-        // Đổ tốc độ gió (Gọi qua lớp tiện ích)
+        // Đổ tốc độ gió
         double windSpeed = data.getWind().getSpeed();
         if (WeatherUtils.isKmH(getContext())) {
             tvWindSpeed.setText(String.format("%.1f km/h", windSpeed));

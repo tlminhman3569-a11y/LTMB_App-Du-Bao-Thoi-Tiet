@@ -15,6 +15,7 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.example.weatherapp.R;
+import com.example.weatherapp.utils.AppConfig;
 import com.example.weatherapp.utils.WeatherUtils;
 import com.example.weatherapp.worker.WeatherWorker;
 
@@ -74,10 +75,10 @@ public class SettingsActivity extends AppCompatActivity {
         sharedPreferences = getSharedPreferences(SETTINGS_PREFS, Context.MODE_PRIVATE);
 
 
-        // 1. Đọc dữ liệu cũ để hiển thị đúng trạng thái giao diện khi vừa vào màn hình
+        //Đọc dữ liệu cũ để hiển thị đúng trạng thái giao diện khi vừa vào màn hình
         setupCurrentSettingsView();
 
-        // 2. Lắng nghe sự kiện thay đổi của Nhóm Nhiệt độ
+        //Lắng nghe sự kiện thay đổi của Nhóm Nhiệt độ
         rgTemperature.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.rbCelsius) {
                 sharedPreferences.edit().putBoolean("is_celsius", true).apply();
@@ -86,7 +87,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        // 3. Lắng nghe sự kiện thay đổi của Nhóm Tốc độ gió
+        //Lắng nghe sự kiện thay đổi của Nhóm Tốc độ gió
         rgWindSpeed.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.rbKmh) {
                 sharedPreferences.edit().putBoolean("is_kmh", true).apply();
@@ -95,7 +96,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        // 4. Lắng nghe chế độ tối
+        //Lắng nghe sư kiện chế độ màn hình tối
         switchDarkMode.setOnClickListener(v -> {
             boolean isChecked = switchDarkMode.isChecked();
             sharedPreferences.edit().putBoolean("is_dark_mode", isChecked).apply();
@@ -107,23 +108,22 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        // 5. LẮNG NGHE SỰ KIỆN BẬT/TẮT THÔNG BÁO CHẠY NGẦM
+        //Lắng nghe sự kiện bật/tắt thông báo thời tiết
         switchNotification.setOnCheckedChangeListener((buttonView, isChecked) -> {
             // Lưu trạng thái lựa chọn của người dùng vào máy
             sharedPreferences.edit().putBoolean("is_notification_enabled", isChecked).apply();
 
             if (isChecked) {
-                // 1. TÍNH TOÁN THỜI GIAN CHỜ ĐỂ BẮN THÔNG BÁO VÀO ĐÚNG 7 GIỜ SÁNG
+                //Tính toán thời gian để thông báo vào đúng khung giờ mặc định sẵn
                 java.util.Calendar currentDate = java.util.Calendar.getInstance();
                 java.util.Calendar dueDate = java.util.Calendar.getInstance();
 
-                // Thiết lập khung giờ vàng bạn muốn: 7 giờ 00 phút 0 giây sáng
-                //Có thể chỉnh sửa khung giờ để Test
-                dueDate.set(java.util.Calendar.HOUR_OF_DAY, 7);
-                dueDate.set(java.util.Calendar.MINUTE, 0);
-                dueDate.set(java.util.Calendar.SECOND, 0);
+                // Thiết lập khung giờ thông báo
+                dueDate.set(java.util.Calendar.HOUR_OF_DAY, AppConfig.NOTIFICATION_HOUR);
+                dueDate.set(java.util.Calendar.MINUTE, AppConfig.NOTIFICATION_MINUTE);
+                dueDate.set(java.util.Calendar.SECOND, AppConfig.NOTIFICATION_SECOND);
 
-                // Nếu thời điểm hiện tại đã qua 7 giờ sáng rồi, thì phải hẹn vào 7 giờ sáng NGÀY MAI
+                // Nếu thời điểm hiện tại đã qua khung giờ thông báo mặc định, thì hẹn thông báo lại sau 24h
                 if (dueDate.before(currentDate)) {
                     dueDate.add(java.util.Calendar.HOUR_OF_DAY, 24);
                 }
@@ -134,7 +134,7 @@ public class SettingsActivity extends AppCompatActivity {
                 androidx.work.Constraints constraints = new androidx.work.Constraints.Builder()
                         .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED) // Chỉ chạy khi có mạng
                         .build();
-                // 2. THIẾT LẬP LỊCH CHẠY ĐỊNH KỲ MỖI 24 TIẾNG (MỖI NGÀY 1 LẦN)
+                //Thiết lập lịch hẹn thông báo định kỳ hằng ngày
                 PeriodicWorkRequest weatherWorkRequest =
                         new PeriodicWorkRequest.Builder(WeatherWorker.class, 24, TimeUnit.HOURS)
                                 .setInitialDelay(timeDiff, TimeUnit.MILLISECONDS) // Ép chờ đến đúng 7:00 sáng mới chạy
@@ -153,7 +153,8 @@ public class SettingsActivity extends AppCompatActivity {
 //                                .build();
 //                WorkManager.getInstance(this).enqueue(instantRequest);
 
-                Toast.makeText(this, "Đã hẹn lịch thông báo vào 7:00 sáng hàng ngày!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Đã hẹn lịch thông báo vào buổi sáng hàng ngày!", Toast.LENGTH_SHORT).show();
+
             } else {
                 // Người dùng TẮT -> Hủy toàn bộ lịch chạy
                 WorkManager.getInstance(this).cancelUniqueWork("WeatherPeriodicCheck");
