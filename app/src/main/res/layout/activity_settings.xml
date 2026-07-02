@@ -21,9 +21,9 @@
             android:background="?attr/selectableItemBackground"
             android:layout_marginBottom="16dp">
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_revert"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_media_previous"
                 android:contentDescription="Quay lại" />
             <TextView
                 android:layout_width="wrap_content"
