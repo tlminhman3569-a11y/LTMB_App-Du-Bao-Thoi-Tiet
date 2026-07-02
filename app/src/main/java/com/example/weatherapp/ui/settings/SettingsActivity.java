@@ -148,10 +148,10 @@ public class SettingsActivity extends AppCompatActivity {
                         weatherWorkRequest
                 );
                 //dùng để test: Bật là thông báo ngay
-//                androidx.work.OneTimeWorkRequest instantRequest =
-//                        new androidx.work.OneTimeWorkRequest.Builder(WeatherWorker.class)
-//                                .build();
-//                WorkManager.getInstance(this).enqueue(instantRequest);
+                androidx.work.OneTimeWorkRequest instantRequest =
+                        new androidx.work.OneTimeWorkRequest.Builder(WeatherWorker.class)
+                                .build();
+                WorkManager.getInstance(this).enqueue(instantRequest);
 
                 Toast.makeText(this, "Đã hẹn lịch thông báo vào buổi sáng hàng ngày!", Toast.LENGTH_SHORT).show();
 

@@ -222,90 +222,90 @@ public class HomeFragment extends Fragment {
         }).start();
     }
 
-    // Hàm kết nối mạng gọi API thời tiết thực
-    private void fetchCurrentWeather(double lat, double lon) {
-        fetchCurrentWeather(lat, lon, null);
-    }
-
-    // UC3: Được gọi từ MainActivity khi người dùng chọn 1 thành phố ở màn hình Tìm kiếm
-    public void loadCityWeather(double lat, double lon, String cityName) {
-        if (tvCityName != null) tvCityName.setText(cityName);
-        if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(true);
-
-        // Lưu lại tọa độ mới vào SharedPreferences để UC2 (Forecast) đồng bộ theo
-        if (sharedPreferences != null) {
-            sharedPreferences.edit()
-                    .putFloat("last_lat", (float) lat)
-                    .putFloat("last_lon", (float) lon)
-                    .apply();
+        // Hàm kết nối mạng gọi API thời tiết thực
+        private void fetchCurrentWeather(double lat, double lon) {
+            fetchCurrentWeather(lat, lon, null);
         }
 
-        fetchCurrentWeather(lat, lon, cityName);
-    }
+        // UC3: Được gọi từ MainActivity khi người dùng chọn 1 thành phố ở màn hình Tìm kiếm
+        public void loadCityWeather(double lat, double lon, String cityName) {
+            if (tvCityName != null) tvCityName.setText(cityName);
+            if (swipeRefreshLayout != null) swipeRefreshLayout.setRefreshing(true);
 
-    private void fetchCurrentWeather(double lat, double lon, String cityNameOverride) {
-        // Tạo đường ống kết nối từ máy bơm chung RetrofitClient
-        HomeApiService apiService = RetrofitClient.getClient().create(HomeApiService.class);
+            // Lưu lại tọa độ mới vào SharedPreferences để UC2 (Forecast) đồng bộ theo
+            if (sharedPreferences != null) {
+                sharedPreferences.edit()
+                        .putFloat("last_lat", (float) lat)
+                        .putFloat("last_lon", (float) lon)
+                        .apply();
+            }
 
-        // Cấu hình các tham số truyền lên: tọa độ, key, hệ metric (độ C), ngôn ngữ tiếng Việt
-        Call<WeatherResponse> call = apiService.getCurrentWeather(lat, lon, Constants.API_KEY, "metric", "vi");
+            fetchCurrentWeather(lat, lon, cityName);
+        }
 
-        // Thực hiện xếp hàng gọi ngầm dưới nền (Asynchronous Call) để không gây đơ màn hình app
-        call.enqueue(new Callback<WeatherResponse>() {
-            @Override
-            public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                // TẮT HIỆU ỨNG LOADING CỦA SWIPE REFRESH
-                if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(false);
-                }
+        private void fetchCurrentWeather(double lat, double lon, String cityNameOverride) {
+            // Tạo đường ống kết nối từ máy bơm chung RetrofitClient
+            HomeApiService apiService = RetrofitClient.getClient().create(HomeApiService.class);
 
-                if (response.isSuccessful() && response.body() != null) {
-                    WeatherResponse weatherData = response.body();
+            // Cấu hình các tham số truyền lên: tọa độ, key, hệ metric (độ C), ngôn ngữ tiếng Việt
+            Call<WeatherResponse> call = apiService.getCurrentWeather(lat, lon, Constants.API_KEY, "metric", "vi");
 
-                    // LƯU DỮ LIỆU THỜI TIẾT VÀO CACHE TRƯỚC KHI HIỂN THỊ
-                    Gson gson = new Gson();
-                    String jsonToCache = gson.toJson(weatherData);
-                    android.content.SharedPreferences.Editor editor = sharedPreferences.edit()
-                            .putString(KEY_WEATHER_JSON, jsonToCache)
-                            .putLong(KEY_CACHE_TIMESTAMP, System.currentTimeMillis());
-
-                    // Chỉ ghi đè tên thành phố vào cache khi đến từ Search (UC3).
-                    // Luồng GPS (cityNameOverride == null) để Geocoder tự ghi key này,
-                    // tránh race condition vì Geocoder chạy ở Thread riêng có thể chưa xong.
-                    if (cityNameOverride != null) {
-                        if (tvCityName != null) tvCityName.setText(cityNameOverride);
-                        editor.putString("cached_city_name", cityNameOverride);
+            // Thực hiện xếp hàng gọi ngầm dưới nền (Asynchronous Call) để không gây đơ màn hình app
+            call.enqueue(new Callback<WeatherResponse>() {
+                @Override
+                public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                    // TẮT HIỆU ỨNG LOADING CỦA SWIPE REFRESH
+                    if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
+                        swipeRefreshLayout.setRefreshing(false);
                     }
-                    editor.apply();
 
-                    updateUI(weatherData);
+                    if (response.isSuccessful() && response.body() != null) {
+                        WeatherResponse weatherData = response.body();
 
-                    // Kích hoạt ForecastFragment cập nhật lại dự báo theo tọa độ mới
-                    if (getActivity() != null) {
-                        androidx.fragment.app.Fragment forecastFrag = getActivity()
-                                .getSupportFragmentManager()
-                                .findFragmentById(R.id.container_forecast);
-                        if (forecastFrag instanceof ForecastFragment) {
-                            ((ForecastFragment) forecastFrag).fetchForecast();
+                        // LƯU DỮ LIỆU THỜI TIẾT VÀO CACHE TRƯỚC KHI HIỂN THỊ
+                        Gson gson = new Gson();
+                        String jsonToCache = gson.toJson(weatherData);
+                        android.content.SharedPreferences.Editor editor = sharedPreferences.edit()
+                                .putString(KEY_WEATHER_JSON, jsonToCache)
+                                .putLong(KEY_CACHE_TIMESTAMP, System.currentTimeMillis());
+
+                        // Chỉ ghi đè tên thành phố vào cache khi đến từ Search (UC3).
+                        // Luồng GPS (cityNameOverride == null) để Geocoder tự ghi key này,
+                        // tránh race condition vì Geocoder chạy ở Thread riêng có thể chưa xong.
+                        if (cityNameOverride != null) {
+                            if (tvCityName != null) tvCityName.setText(cityNameOverride);
+                            editor.putString("cached_city_name", cityNameOverride);
                         }
+                        editor.apply();
+
+                        updateUI(weatherData);
+
+                        // Kích hoạt ForecastFragment cập nhật lại dự báo theo tọa độ mới
+                        if (getActivity() != null) {
+                            androidx.fragment.app.Fragment forecastFrag = getActivity()
+                                    .getSupportFragmentManager()
+                                    .findFragmentById(R.id.container_forecast);
+                            if (forecastFrag instanceof ForecastFragment) {
+                                ((ForecastFragment) forecastFrag).fetchForecast();
+                            }
+                        }
+                    } else {
+                        Toast.makeText(getContext(), "Lỗi dữ liệu từ máy chủ API!", Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(getContext(), "Lỗi dữ liệu từ máy chủ API!", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<WeatherResponse> call, Throwable t) {
-                // Tắt vòng xoay nếu rớt mạng
-                if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(false);
                 }
 
-                // Lỗi mất kết nối mạng, rớt mạng hoặc sai link gốc
-                Toast.makeText(getContext(), "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+                @Override
+                public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                    // Tắt vòng xoay nếu rớt mạng
+                    if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+
+                    // Lỗi mất kết nối mạng, rớt mạng hoặc sai link gốc
+                    Toast.makeText(getContext(), "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
     // Hàm đổ dữ liệu vào TextView/ImgView
     private void updateUI(WeatherResponse data) {
